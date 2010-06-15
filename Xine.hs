@@ -11,24 +11,42 @@
 
 module Xine (
     -- * Handle
-    XineHandle, open, close,
+    XineHandle, open, close, isClosed,
     -- * Playback
     openStream, play, stop, pause
     ) where
 
 import Xine.Foreign
 
-import Control.Monad (unless)
+import Control.Concurrent.MVar
+import Control.Monad (unless, when)
 import Foreign
 import Foreign.C
 
--- | A xine-lib handle.
-data XineHandle = XineHandle
+data HandleState = Closed | Open deriving Eq
+
+-- Internal handle structure.
+data XineHandle_ = XineHandle_
     { hEngine :: !(Ptr Engine)
     , hAudioPort :: !(Ptr AudioPort)
     , hVideoPort :: !(Ptr VideoPort)
     , hStream :: !(Ptr Stream)
+    , hState :: HandleState
     }
+
+-- | A xine-lib handle.
+newtype XineHandle = XineHandle (MVar XineHandle_)
+
+-- | Test whether the handle is closed.
+isClosed :: XineHandle -> IO Bool
+isClosed (XineHandle hv) = withMVar hv $ \h -> return (hState h == Closed)
+
+-- A helper for functions using the xine-handle wrapper.
+withXineHandle :: XineHandle -> (XineHandle_ -> IO a) -> IO a
+withXineHandle h@(XineHandle hv) f = do
+    closed <- isClosed h
+    when closed (fail "XineHandle is closed")
+    withMVar hv $ f
 
 -- | Open a new Xine handle.
 open :: IO XineHandle
@@ -41,36 +59,39 @@ open = do
 
     st <- xine_stream_new engine ap vp
 
-    return $ XineHandle engine ap vp st
+    h_ <- newMVar $ XineHandle_ engine ap vp st Open
+    return $ XineHandle h_
 
 -- | Close Xine handle. The handle is invalid after this.
 close :: XineHandle -> IO ()
-close h = do
-    xine_close (hStream h)
-    xine_close_audio_driver (hEngine h) (hAudioPort h)
-    xine_close_video_driver (hEngine h) (hVideoPort h)
-    xine_exit (hEngine h)
+close h@(XineHandle hv) = do
+    withXineHandle h $ \h_ -> do
+        xine_close (hStream h_)
+        xine_close_audio_driver (hEngine h_) (hAudioPort h_)
+        xine_close_video_driver (hEngine h_) (hVideoPort h_)
+        xine_exit (hEngine h_)
+    modifyMVar_ hv $ \x -> return x { hState = Closed }
 
 -- | Open a URI for playback.
 openStream :: XineHandle -> String -> IO ()
-openStream h uri = do
-    ret <- withCString uri $ \s -> xine_open (hStream h) s
+openStream h uri = withXineHandle h $ \h_ -> do
+    ret <- withCString uri $ \s -> xine_open (hStream h_) s
     unless (ret == 1) (fail "Failed to open URI")
 
 -- | Start playback.
 play :: XineHandle -> IO ()
-play h = do
-    ret <- xine_play (hStream h) 0 0
+play h = withXineHandle h $ \h_ -> do
+    ret <- xine_play (hStream h_) 0 0
     unless (ret == 1) (fail "Failed to start playback")
 
 -- | Stop playback.
 stop :: XineHandle -> IO ()
-stop h = xine_stop (hStream h)
+stop h = withXineHandle h $ \h_ -> xine_stop (hStream h_)
 
 -- | Toggle pause
 pause :: XineHandle -> IO ()
-pause h = do
-    s <- xine_get_param (hStream h) param_speed
+pause h = withXineHandle h $ \h_ -> do
+    s <- xine_get_param (hStream h_) param_speed
     let speed | unSpeed speed_normal == s = speed_pause
               | otherwise                 = speed_normal
-    xine_set_param (hStream h) param_speed (unSpeed speed)
+    xine_set_param (hStream h_) param_speed (unSpeed speed)
