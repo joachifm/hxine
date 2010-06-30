@@ -88,7 +88,7 @@ play h = withXineHandle h $ \h_ -> do
 stop :: XineHandle -> IO ()
 stop h = withXineHandle h $ \h_ -> xine_stop (hStream h_)
 
--- | Toggle pause
+-- | Toggle pause.
 pause :: XineHandle -> IO ()
 pause h = withXineHandle h $ \h_ -> do
     s <- xine_get_param (hStream h_) param_speed
