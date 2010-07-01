@@ -407,6 +407,9 @@ deriving instance Eq Speed
            ,XINE_STATUS_PLAY as Playing
            ,XINE_STATUS_QUIT as Quitting}#}
 
+deriving instance Eq EngineStatus
+deriving instance Show EngineStatus
+
 -- | Xine error codes.
 {#enum define XineError
            {XINE_ERROR_NONE as NoError
@@ -414,6 +417,9 @@ deriving instance Eq Speed
            ,XINE_ERROR_NO_DEMUX_PLUGIN as NoDemuxPlugin
            ,XINE_ERROR_MALFORMED_MRL as MalformedMrl
            ,XINE_ERROR_INPUT_FAILED as InputFailed}#}
+
+deriving instance Eq XineError
+deriving instance Show XineError
 
 -- | Return last error.
 --
