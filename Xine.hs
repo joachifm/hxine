@@ -99,10 +99,12 @@ openWith conf = do
     engine <- xine_new
     xine_init engine
 
-    ap <- xine_open_audio_driver engine (audioDriver conf)
-    vp <- xine_open_video_driver engine (videoDriver conf) (visualType conf)
-
-    st <- xine_stream_new engine ap vp
+    ap <- maybe (fail "Failed to open the audio driver") return =<<
+          xine_open_audio_driver engine (audioDriver conf)
+    vp <- maybe (fail "Failed to open the video driver") return =<<
+          xine_open_video_driver engine (videoDriver conf) (visualType conf)
+    st <- maybe (fail "Failed to open a new stream") return =<<
+          xine_stream_new engine ap vp
 
     h_ <- newMVar $ XineHandle_ engine ap vp st Open
     return $ XineHandle h_

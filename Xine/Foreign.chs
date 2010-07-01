@@ -69,13 +69,16 @@ enum2cint = fromIntegral . fromEnum
 
 peekInt = liftM fromIntegral . peek
 
+maybeForeignPtr_ c x | x == nullPtr = return Nothing
+                     | otherwise    = (Just . c) `liftM` newForeignPtr_ x
+
 peekEngine = liftM Engine . newForeignPtr_
 
-peekAudioPort = liftM AudioPort . newForeignPtr_
+peekAudioPort = maybeForeignPtr_ AudioPort
 
-peekVideoPort = liftM VideoPort . newForeignPtr_
+peekVideoPort = maybeForeignPtr_ VideoPort
 
-peekStream = liftM Stream . newForeignPtr_
+peekStream = maybeForeignPtr_ Stream
 
 withData f = f nullPtr
 
@@ -165,7 +168,7 @@ withMaybeString (Just s) f = withCString s f
 {#fun unsafe xine_open_audio_driver
  {withEngine* `Engine'
  ,withMaybeString* `(Maybe String)'
- ,withData- `Data'} -> `AudioPort' peekAudioPort*#}
+ ,withData- `Data'} -> `(Maybe AudioPort)' peekAudioPort*#}
 
 -- | Initialise video driver.
 --
@@ -185,7 +188,7 @@ withMaybeString (Just s) f = withCString s f
  {withEngine* `Engine'
  ,withMaybeString* `(Maybe String)'
  ,enum2cint `VisualType'
- ,withData- `Data'} -> `VideoPort' peekVideoPort*#}
+ ,withData- `Data'} -> `(Maybe VideoPort)' peekVideoPort*#}
 
 -- | Close audio port.
 --
@@ -312,7 +315,7 @@ deriving instance Eq Speed
 {#fun unsafe xine_stream_new
  {withEngine* `Engine'
  ,withAudioPort* `AudioPort'
- ,withVideoPort* `VideoPort'} -> `Stream' peekStream*#}
+ ,withVideoPort* `VideoPort'} -> `(Maybe Stream)' peekStream*#}
 
 -- | Open a stream.
 --
