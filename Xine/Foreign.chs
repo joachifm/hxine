@@ -21,7 +21,7 @@ module Xine.Foreign (
     xine_close_audio_driver, xine_close_video_driver, xine_exit,
     -- * Stream handling
     Stream, StreamParam(..), Speed(..), NormalSpeed(..), Zoom(..),
-    AspectRatio(..), Mrl, EngineParam(..),
+    AspectRatio(..), MRL, EngineParam(..),
     xine_stream_new, xine_open, xine_play, xine_stop, xine_close,
     xine_engine_set_param, xine_engine_get_param,
     xine_set_param, xine_get_param,
@@ -53,7 +53,7 @@ import Foreign.C
 newtype Data = Data (Ptr Data)
 
 -- | Media Resource Locator.
-type Mrl = String
+type MRL = String
 
 ------------------------------------------------------------------------------
 -- Marshalling
@@ -326,7 +326,7 @@ deriving instance Eq Speed
 -- Returns 1 if OK, 0 on error.
 {#fun unsafe xine_open
  {withStream* `Stream'
- ,withCAString* `Mrl'} -> `Int' fromIntegral#}
+ ,withCAString* `MRL'} -> `Int' fromIntegral#}
 
 -- | Play a stream from a given position.
 --

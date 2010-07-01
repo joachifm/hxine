@@ -25,7 +25,7 @@ module Xine (
     -- * Configuration
     XineConf(..), defaultConf,
     -- * Types
-    VisualType(..),
+    VisualType(..), MRL,
     -- * Handle
     XineHandle, open, close, isClosed,
     -- * Playback
@@ -124,7 +124,7 @@ close h@(XineHandle hv) = do
 ------------------------------------------------------------------------------
 
 -- | Open a URI for playback.
-openStream :: XineHandle -> String -> IO ()
+openStream :: XineHandle -> MRL -> IO ()
 openStream h uri = withXineHandle h $ \h_ -> do
     ret <- xine_open (hStream h_) uri
     unless (ret == 1) (fail "Failed to open URI")
