@@ -27,7 +27,7 @@ module Xine (
     -- * Types
     VisualType(..), MRL,
     -- * Handle
-    XineHandle, open, close, isClosed,
+    XineHandle, open, openWith, close, isClosed,
     -- * Playback
     openStream, play, stop, pause
     ) where
