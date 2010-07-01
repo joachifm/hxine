@@ -23,8 +23,8 @@ source-repository head
 
 library
     hs-source-dirs: .
-    exposed-modules: Xine
-    other-modules: Xine.Foreign
+    exposed-modules: Xine,
+                     Xine.Foreign
     build-depends: base ==4.2.*
     build-tools: c2hs
     extensions: CPP, ForeignFunctionInterface, StandaloneDeriving
