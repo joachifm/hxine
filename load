@@ -1,3 +1,3 @@
 #!/bin/sh
 
-hsc2hs Xine/Foreign.hsc && ghci -lxine Xine
+c2hs Xine/Foreign.chs && ghci -lxine "$@"
