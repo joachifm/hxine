@@ -11,15 +11,15 @@
 --
 -- Example usage:
 --
--- import qualified Xine
+-- > import qualified Xine
 --
--- main = do
+-- > main = do
 --
---     h <- Xine.open
+-- >     h <- Xine.open
 --
---     Xine.openStream h \"track.mp3\"
+-- >     Xine.openStream h \"track.mp3\"
 --
---     Xine.play h
+-- >     Xine.play h
 
 module Xine (
     -- * Configuration
