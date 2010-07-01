@@ -16,7 +16,6 @@ bug-reports: http://github.com/joachifm/hxine/issues
 extra-source-files: ChangeLog, README.md
 build-type: Simple
 cabal-version: >= 1.6 && < 1.9
-build-tools: c2hs
 
 source-repository head
     type: git
@@ -27,7 +26,8 @@ library
     exposed-modules: Xine
     other-modules: Xine.Foreign
     build-depends: base ==4.2.*
-    extensions: CPP, EmptyDataDecls, ForeignFunctionInterface
+    build-tools: c2hs
+    extensions: CPP, ForeignFunctionInterface, StandaloneDeriving
     includes: xine.h
     extra-libraries: xine
     ghc-options: -Wall
