@@ -1,1 +1,4 @@
+*.chi
+*.chs.h
+Xine/Foreign.hs
 dist/
