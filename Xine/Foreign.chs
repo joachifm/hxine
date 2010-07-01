@@ -184,7 +184,7 @@ withMaybeString (Just s) f = withCString s f
 {#fun unsafe xine_open_video_driver
  {withEngine* `Engine'
  ,withMaybeString* `(Maybe String)'
- ,fromIntegral `Int'
+ ,enum2cint `VisualType'
  ,withData- `Data'} -> `VideoPort' peekVideoPort*#}
 
 -- | Close audio port.
