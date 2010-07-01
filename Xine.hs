@@ -8,6 +8,18 @@
 -- Portability : not portable
 --
 -- A simple binding to xine-lib.
+--
+-- Example usage:
+--
+-- import qualified Xine
+--
+-- main = do
+--
+--     h <- Xine.open
+--
+--     Xine.openStream h \"track.mp3\"
+--
+--     Xine.play h
 
 module Xine (
     -- * Configuration
