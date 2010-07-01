@@ -53,6 +53,68 @@ import Foreign.C
 newtype Data = Data (Ptr Data)
 
 -- | Media Resource Locator.
+-- Describes the media to read from. Valid MRLs may be plain file names or
+-- one of the following:
+--
+-- * Filesystem:
+--
+-- file:\<path\>
+--
+-- fifo:\<path\>
+--
+-- stdin:\/
+--
+-- * CD and DVD:
+--
+-- dvd:\/[device_name][\/title[.part]]
+--
+-- dvd:\/DVD_image_file[\/title[.part]]
+--
+-- dvd:\/DVD_directory[\/title[.part]]
+--
+-- vcd:\/\/[CD_image_or_device_name][\@[letter]number]
+--
+-- vcdo:\/\/track_number
+--
+-- cdda:\/[device][\/track_number]
+--
+-- * Video devices:
+--
+-- v4l:\/\/[tuner_device\/frequency
+--
+-- v4l2:\/\/tuner_device
+--
+-- dvb:\/\/channel_number
+--
+-- dvb:\/\/channel_name
+--
+-- dvbc:\/\/channel_name:tuning_parameters
+--
+-- dvbs:\/\/channel_name:tuning_parameters
+--
+-- dvbt:\/\/channel_name:tuning_parameters
+--
+-- dvba:\/\/channel_name:tuning_parameters
+--
+-- pvr:\/tmp_files_path!saved_files_path!max_page_age
+--
+-- * Network:
+--
+-- http:\/\/host
+--
+-- tcp:\/\/host[:port]
+--
+-- udp:\/\/host[:port[?iface=interface]]
+--
+-- rtp:\/\/host[:port[?iface=interface]]
+--
+-- smb:\/\/
+--
+-- mms:\/\/host
+--
+-- pnm:\/\/host
+--
+-- rtsp:\/\/host
 type MRL = String
 
 ------------------------------------------------------------------------------
