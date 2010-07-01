@@ -17,7 +17,7 @@
 --
 -- >     h <- Xine.open
 --
--- >     Xine.openStream h \"track.mp3\"
+-- >     Xine.openStream h "track.mp3"
 --
 -- >     Xine.play h
 
