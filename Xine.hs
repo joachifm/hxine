@@ -93,7 +93,7 @@ withXineHandle h@(XineHandle hv) f = do
 open :: IO XineHandle
 open = openWith defaultConf
 
--- | Open a new Xine handle using the supplied 'XineConfig'.
+-- | Open a new Xine handle using the supplied 'XineConf'.
 openWith :: XineConf -> IO XineHandle
 openWith conf = do
     engine <- xine_new
