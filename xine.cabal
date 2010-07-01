@@ -16,6 +16,7 @@ bug-reports: http://github.com/joachifm/hxine/issues
 extra-source-files: ChangeLog, README.md
 build-type: Simple
 cabal-version: >= 1.6 && < 1.9
+build-tools: c2hs
 
 source-repository head
     type: git

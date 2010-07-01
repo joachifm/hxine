@@ -20,18 +20,19 @@ import Xine.Foreign
 
 import Control.Concurrent.MVar
 import Control.Monad (unless, when)
-import Foreign
-import Foreign.C
+
+------------------------------------------------------------------------------
+-- Handle
+------------------------------------------------------------------------------
 
 data HandleState = Closed | Open deriving Eq
 
--- Internal handle structure.
 data XineHandle_ = XineHandle_
-    { hEngine :: !(Ptr Engine)
-    , hAudioPort :: !(Ptr AudioPort)
-    , hVideoPort :: !(Ptr VideoPort)
-    , hStream :: !(Ptr Stream)
-    , hState :: HandleState
+    { hEngine :: !Engine
+    , hAudioPort :: !AudioPort
+    , hVideoPort :: !VideoPort
+    , hStream :: !Stream
+    , hState :: !HandleState
     }
 
 -- | A xine-lib handle.
@@ -54,8 +55,8 @@ open = do
     engine <- xine_new
     xine_init engine
 
-    ap <- xine_open_audio_driver engine nullPtr nullPtr
-    vp <- xine_open_video_driver engine nullPtr visual_none nullPtr
+    ap <- xine_open_audio_driver engine Nothing
+    vp <- xine_open_video_driver engine Nothing 0
 
     st <- xine_stream_new engine ap vp
 
@@ -72,10 +73,14 @@ close h@(XineHandle hv) = do
         xine_exit (hEngine h_)
     modifyMVar_ hv $ \x -> return x { hState = Closed }
 
+------------------------------------------------------------------------------
+-- Playback
+------------------------------------------------------------------------------
+
 -- | Open a URI for playback.
 openStream :: XineHandle -> String -> IO ()
 openStream h uri = withXineHandle h $ \h_ -> do
-    ret <- withCString uri $ \s -> xine_open (hStream h_) s
+    ret <- xine_open (hStream h_) uri
     unless (ret == 1) (fail "Failed to open URI")
 
 -- | Start playback.
@@ -91,7 +96,7 @@ stop h = withXineHandle h $ \h_ -> xine_stop (hStream h_)
 -- | Toggle pause.
 pause :: XineHandle -> IO ()
 pause h = withXineHandle h $ \h_ -> do
-    s <- xine_get_param (hStream h_) param_speed
-    let speed | unSpeed speed_normal == s = speed_pause
-              | otherwise                 = speed_normal
-    xine_set_param (hStream h_) param_speed (unSpeed speed)
+    s <- xine_get_param (hStream h_) Speed :: IO Speed
+    let speed | s == Pause = Normal
+              | otherwise  = Pause
+    xine_set_param (hStream h_) Speed speed
