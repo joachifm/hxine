@@ -24,6 +24,8 @@
 module Xine (
     -- * Configuration
     XineConf(..), defaultConf,
+    -- * Types
+    VisualType(..),
     -- * Handle
     XineHandle, open, close, isClosed,
     -- * Playback
@@ -47,11 +49,17 @@ data XineConf = XineConf
     , videoDriver :: Maybe String
       -- ^ Video driver. Use 'Nothing' for
       -- auto-detection.
+    , visualType :: VisualType
+      -- ^ Video output type. Use 'None' to disable video output.
     }
 
 -- | Default configuration.
 defaultConf :: XineConf
-defaultConf = XineConf { audioDriver = Nothing, videoDriver = Nothing }
+defaultConf = XineConf
+    { audioDriver = Nothing
+    , videoDriver = Nothing
+    , visualType = None
+    }
 
 ------------------------------------------------------------------------------
 -- Handle
@@ -92,7 +100,7 @@ openWith conf = do
     xine_init engine
 
     ap <- xine_open_audio_driver engine (audioDriver conf)
-    vp <- xine_open_video_driver engine (videoDriver conf) 0
+    vp <- xine_open_video_driver engine (videoDriver conf) (visualType conf)
 
     st <- xine_stream_new engine ap vp
 
