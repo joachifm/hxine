@@ -61,8 +61,10 @@ type Mrl = String
 
 int2bool = (/= 0)
 
+cint2enum :: Enum a => CInt -> a
 cint2enum = toEnum . fromIntegral
 
+enum2cint :: Enum a => a -> CInt
 enum2cint = fromIntegral . fromEnum
 
 peekInt = liftM fromIntegral . peek
