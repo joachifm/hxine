@@ -10,6 +10,8 @@
 -- A simple binding to xine-lib.
 
 module Xine (
+    -- * Configuration
+    XineConf(..), defaultConf,
     -- * Handle
     XineHandle, open, close, isClosed,
     -- * Playback
@@ -20,6 +22,24 @@ import Xine.Foreign
 
 import Control.Concurrent.MVar
 import Control.Monad (unless, when)
+
+------------------------------------------------------------------------------
+-- Configuration
+------------------------------------------------------------------------------
+
+-- | Xine configuration.
+data XineConf = XineConf
+    { audioDriver :: Maybe String
+      -- ^ Audio driver. Use 'Nothing' for
+      -- auto-detection.
+    , videoDriver :: Maybe String
+      -- ^ Video driver. Use 'Nothing' for
+      -- auto-detection.
+    }
+
+-- | Default configuration.
+defaultConf :: XineConf
+defaultConf = XineConf { audioDriver = Nothing, videoDriver = Nothing }
 
 ------------------------------------------------------------------------------
 -- Handle
@@ -49,14 +69,18 @@ withXineHandle h@(XineHandle hv) f = do
     when closed (fail "XineHandle is closed")
     withMVar hv $ f
 
--- | Open a new Xine handle.
+-- | Open a new Xine handle using the default configuration.
 open :: IO XineHandle
-open = do
+open = openWith defaultConf
+
+-- | Open a new Xine handle using the supplied 'XineConfig'.
+openWith :: XineConf -> IO XineHandle
+openWith conf = do
     engine <- xine_new
     xine_init engine
 
-    ap <- xine_open_audio_driver engine Nothing
-    vp <- xine_open_video_driver engine Nothing 0
+    ap <- xine_open_audio_driver engine (audioDriver conf)
+    vp <- xine_open_video_driver engine (videoDriver conf) 0
 
     st <- xine_stream_new engine ap vp
 
