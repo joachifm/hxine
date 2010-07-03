@@ -29,7 +29,7 @@ module Xine (
     -- * Handle
     XineHandle, open, openWith, close, isClosed,
     -- * Playback
-    openStream, play, stop, pause
+    openStream, play, seek, stop, pause
     ) where
 
 import Xine.Foreign
@@ -123,6 +123,12 @@ close h@(XineHandle hv) = do
 -- Playback
 ------------------------------------------------------------------------------
 
+-- | Argument for 'seek'.
+data SeekArg
+    = SeekTime Int
+    | SeekPos Int
+      deriving (Eq, Show)
+
 -- | Open a URI for playback.
 openStream :: XineHandle -> MRL -> IO ()
 openStream h uri = withXineHandle h $ \h_ -> do
@@ -134,6 +140,20 @@ play :: XineHandle -> IO ()
 play h = withXineHandle h $ \h_ -> do
     ret <- xine_play (hStream h_) 0 0
     unless (ret == 1) (fail "Failed to start playback")
+
+-- | Seek to a position or time in the stream.
+--
+-- Warning: this will crash if 'xine_trick_mode' is not implemented.
+seek :: XineHandle -> SeekArg -> IO ()
+seek h arg = withXineHandle h $ \h_ -> do
+    ret <- xine_trick_mode (hStream h_) (trick arg) (val arg)
+    unless (ret == 1) (fail "Seek failed")
+    where
+        val (SeekTime x) = x
+        val (SeekPos x) = x
+
+        trick (SeekTime _) = TrickSeekToTime
+        trick (SeekPos _)  = TrickSeekToPosition
 
 -- | Stop playback.
 stop :: XineHandle -> IO ()
