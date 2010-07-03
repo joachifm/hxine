@@ -5,7 +5,7 @@
 -- |
 -- Module      : Xine.Foreign
 -- Copyright   : (c) Joachim Fasting 2010
--- License     : LGPL
+-- License     : LGPL (see COPYING)
 -- Maintainer  : Joachim Fasting <joachim.fasting@gmail.com>
 -- Stability   : unstable
 -- Portability : not portable
