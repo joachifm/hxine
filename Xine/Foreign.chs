@@ -23,11 +23,16 @@ module Xine.Foreign (
     Stream, StreamParam(..), Speed(..), NormalSpeed(..), Zoom(..),
     AspectRatio(..), MRL, EngineParam(..), Affection(..), TrickMode(..),
     xine_stream_new, xine_stream_master_slave, xine_open, xine_play,
+    xine_dispose, xine_eject,
     xine_trick_mode, xine_stop, xine_close, xine_engine_set_param,
     xine_engine_get_param, xine_set_param, xine_get_param,
     -- * Information retrieval
     EngineStatus(..), XineError(..),
-    xine_get_error, xine_get_status
+    xine_get_error, xine_get_status,
+    xine_get_audio_lang, xine_get_spu_lang,
+    xine_get_pos_length,
+    InfoType(..), MetaType(..),
+    xine_get_stream_info, xine_get_meta_info
     ) where
 
 import Control.Monad (liftM)
@@ -129,6 +134,9 @@ int2cint = fromIntegral
 
 cint2int :: CInt -> Int
 cint2int = fromIntegral
+
+cuint2int :: CUInt -> Int
+cuint2int = fromIntegral
 
 cint2enum :: Enum a => CInt -> a
 cint2enum = toEnum . cint2int
@@ -473,6 +481,21 @@ combineAffection xs = foldr1 (.&.) (map enum2cint xs)
 -- void xine_close (xine_stream_t *stream)
 {#fun unsafe xine_close {withStream* `Stream'} -> `()'#}
 
+-- | Ask current input plugin to eject media.
+--
+-- Header declaration:
+--
+-- int xine_eject (xine_stream_t *stream)
+{#fun unsafe xine_eject {withStream* `Stream'} -> `Int' cint2int#}
+
+-- | Stop playback, dispose all stream-related resources.
+-- The stream is no longer valid after this.
+--
+-- Header declaration:
+--
+-- void xine_dispose (xine_stream_t *stream)
+{#fun unsafe xine_dispose {withStream* `Stream'} -> `()'#}
+
 -- | Set engine parameter.
 --
 -- Header declaration:
@@ -551,3 +574,134 @@ deriving instance Show XineError
 -- int xine_get_status (xine_stream_t *stream)
 {#fun unsafe xine_get_status
  {withStream* `Stream'} -> `EngineStatus' cint2enum#}
+
+-- | Find the audio language of the given channel (use -1 for
+-- current channel).
+--
+-- Header declaration:
+--
+-- int xine_get_audio_lang (xine_stream_t *stream, int channel,
+--                          char *lang)
+--
+-- lang must point to a buffer of at least XINE_LANG_MAX bytes.
+--
+-- Returns 1 on success, 0 on failure.
+{#fun unsafe xine_get_audio_lang
+          {withStream* `Stream'
+          ,int2cint `Int'
+          ,allocLangBuf- `String' peekCString*} -> `Int' cint2int#}
+
+-- XXX: read the constant XINE_LANG_MAX
+allocLangBuf = allocaArray0 32
+
+-- | Find the spu language of the given channel (use -1 for
+-- current channel).
+--
+-- Header declaration:
+--
+-- int xine_get_spu_lang (xine_stream_t *stream, int channel,
+--                          char *lang)
+--
+-- lang must point to a buffer of at least XINE_LANG_MAX bytes.
+--
+-- Returns 1 on success, 0 on failure.
+{#fun unsafe xine_get_spu_lang
+          {withStream* `Stream'
+          ,int2cint `Int'
+          ,allocLangBuf- `String' peekCString*} -> `Int' cint2int#}
+
+-- | Get position\/length information.
+--
+-- Header declaration:
+--
+-- int xine_get_pos_length (xine_stream_t *stream, int *pos_stream,
+--                          int *pos_time, int *length_time)
+--
+-- Returns 1 on success, 0 on failure.
+{#fun unsafe xine_get_pos_length
+          {withStream* `Stream'
+          ,alloca- `Int' peekInt*
+          ,alloca- `Int' peekInt*
+          ,alloca- `Int' peekInt*} -> `Int' cint2int#}
+
+-- | Get information about the stream.
+--
+-- Header declaration:
+--
+-- int32_t xine_get_stream_info (xine_stream_t *stream, int info)
+{#fun unsafe xine_get_stream_info
+          {withStream* `Stream'
+          ,enum2cint `InfoType'} -> `Int' cuint2int#}
+
+-- | Get meta information about the stream.
+--
+-- Header declaration:
+--
+-- const char *xine_get_meta_info (xine_stream_t *stream, int info)
+{#fun unsafe xine_get_meta_info
+          {withStream* `Stream'
+          ,enum2cint `MetaType'} -> `String' peekCString*#}
+
+{#enum define InfoType
+           {XINE_STREAM_INFO_BITRATE as InfoBitrate
+           ,XINE_STREAM_INFO_SEEKABLE as InfoSeekable
+           ,XINE_STREAM_INFO_VIDEO_WIDTH as InfoVideoWidth
+           ,XINE_STREAM_INFO_VIDEO_HEIGHT as InfoVideoHeight
+           ,XINE_STREAM_INFO_VIDEO_RATIO as InfoVideoRatio
+           ,XINE_STREAM_INFO_VIDEO_CHANNELS as InfoVideoChannels
+           ,XINE_STREAM_INFO_VIDEO_STREAMS as InfoVideoStreams
+           ,XINE_STREAM_INFO_VIDEO_BITRATE as InfoVideoBitrate
+           ,XINE_STREAM_INFO_VIDEO_FOURCC as InfoVideoFourCC
+           ,XINE_STREAM_INFO_VIDEO_HANDLED as InfoVideoHandled
+           ,XINE_STREAM_INFO_FRAME_DURATION as InfoFrameDuration
+           ,XINE_STREAM_INFO_AUDIO_CHANNELS as InfoAudioChannels
+           ,XINE_STREAM_INFO_AUDIO_BITS as InfoAudioBits
+           ,XINE_STREAM_INFO_AUDIO_SAMPLERATE as InfoAudioSamplerate
+           ,XINE_STREAM_INFO_AUDIO_BITRATE as InfoAudioBitrate
+           ,XINE_STREAM_INFO_AUDIO_FOURCC as InfoAudioFourCC
+           ,XINE_STREAM_INFO_AUDIO_HANDLED as InfoAudioHandled
+           ,XINE_STREAM_INFO_HAS_CHAPTERS as InfoHasChapters
+           ,XINE_STREAM_INFO_HAS_VIDEO as InfoHasVideo
+           ,XINE_STREAM_INFO_HAS_AUDIO as InfoHasAudio
+           ,XINE_STREAM_INFO_IGNORE_VIDEO as InfoIgnoreVideo
+           ,XINE_STREAM_INFO_IGNORE_AUDIO as InfoIgnoreAudio
+           ,XINE_STREAM_INFO_IGNORE_SPU as InfoIgnoreSpu
+           ,XINE_STREAM_INFO_VIDEO_HAS_STILL as InfoVideoHasStill
+           ,XINE_STREAM_INFO_MAX_AUDIO_CHANNEL as InfoMaxAudioChannel
+           ,XINE_STREAM_INFO_MAX_SPU_CHANNEL as InfoMaxSpuChannel
+           ,XINE_STREAM_INFO_AUDIO_MODE as InfoAudioMode
+           ,XINE_STREAM_INFO_SKIPPED_FRAMES as InfoSkippedFrames
+           ,XINE_STREAM_INFO_DISCARDED_FRAMES as InfoDiscardedFrames
+           ,XINE_STREAM_INFO_VIDEO_AFD as InfoVideoAFD
+           ,XINE_STREAM_INFO_DVD_TITLE_NUMBER as InfoDvdTitleNumber
+           ,XINE_STREAM_INFO_DVD_TITLE_COUNT as InfoDvdTitleCount
+           ,XINE_STREAM_INFO_DVD_CHAPTER_NUMBER as InfoDvdChapterNumber
+           ,XINE_STREAM_INFO_DVD_CHAPTER_COUNT as InfoDvdChapterCount
+           ,XINE_STREAM_INFO_DVD_ANGLE_NUMBER as InfoDvdAngleNumber
+           ,XINE_STREAM_INFO_DVD_ANGLE_COUNT as InfoDvdAngleCount}#}
+
+{#enum define MetaType
+           {XINE_META_INFO_TITLE as MetaTitle
+           ,XINE_META_INFO_COMMENT as MetaComment
+           ,XINE_META_INFO_ARTIST as MetaArtist
+           ,XINE_META_INFO_GENRE as MetaGenre
+           ,XINE_META_INFO_ALBUM as MetaAlbum
+           ,XINE_META_INFO_YEAR as MetaYear
+           ,XINE_META_INFO_VIDEOCODEC as MetaVideoCodec
+           ,XINE_META_INFO_AUDIOCODEC as MetaAudioCodec
+           ,XINE_META_INFO_SYSTEMLAYER as MetaSystemLayer
+           ,XINE_META_INFO_INPUT_PLUGIN as MetaInputPlugin
+           ,XINE_META_INFO_CDINDEX_DISCID as MetaDiscId
+           ,XINE_META_INFO_TRACK_NUMBER as MetaTrackNumber
+           ,XINE_META_INFO_COMPOSER as MetaComposer
+           ,XINE_META_INFO_PUBLISHER as MetaPublisher
+           ,XINE_META_INFO_LICENSE as MetaLicense
+           ,XINE_META_INFO_ARRANGER as MetaArranger
+           ,XINE_META_INFO_LYRICIST as MetaLyricist
+           ,XINE_META_INFO_CONDUCTOR as MetaConductor
+           ,XINE_META_INFO_PERFORMER as MetaPerformer
+           ,XINE_META_INFO_ENSEMBLE as MetaEnsemble
+           ,XINE_META_INFO_OPUS as MetaOpus
+           ,XINE_META_INFO_PART as MetaPart
+           ,XINE_META_INFO_PARTNUMBER as MetaPartNumber
+           ,XINE_META_INFO_LOCATION as MetaLocation}#}
