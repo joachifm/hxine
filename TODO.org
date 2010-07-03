@@ -1,0 +1,13 @@
+#+Startup: overview logdone lognorepeat indent
+#+TODO: TODO(t) ACTIVE(a) CANCELLED(c) DEFERRED DONE(d)
+#+TAGS: defect enhancement task feature
+
+* TODO Missing bindings                                             :feature:
+** TODO Plugin management
+** TODO Visual specific GUI/Xine engine communication
+** TODO xine health check
+** TODO Configuration system
+** TODO Asynchroneous xine event mechanism
+** TODO OSD
+* TODO Proper implementation of Data                            :enhancement:
+* TODO Re-order code in Foreign.chs to exactly mirror xine.h           :task:
