@@ -32,7 +32,10 @@ module Xine (
     openStream, closeStream, getCurrent,
     -- * Playback
     SeekArg(..),
-    play, seek, stop, pause
+    play, seek, stop, pause,
+    -- * Information retrieval
+    EngineStatus(..),
+    getStatus
     ) where
 
 import Xine.Foreign
@@ -244,3 +247,14 @@ pause h sid = withStream h sid $ \st -> do
     let speed | s == Pause = Normal
               | otherwise  = Pause
     xine_set_param st Speed speed
+
+------------------------------------------------------------------------------
+-- Information retrieval
+------------------------------------------------------------------------------
+
+-- | Get current engine status.
+getStatus :: XineHandle -> IO EngineStatus
+getStatus h = withXineHandle h $ \h_ ->
+    case hCurrent h_ of
+        Just sid -> xine_get_status (fromJust $ lookupStream sid (hStreams h_))
+        Nothing  -> return Idle
