@@ -29,6 +29,7 @@ module Xine (
     -- * Handle
     XineHandle, open, openWith, close, isClosed,
     -- * Playback
+    SeekArg(..),
     openStream, play, seek, stop, pause
     ) where
 
@@ -123,12 +124,6 @@ close h@(XineHandle hv) = do
 -- Playback
 ------------------------------------------------------------------------------
 
--- | Argument for 'seek'.
-data SeekArg
-    = SeekTime Int
-    | SeekPos Int
-      deriving (Eq, Show)
-
 -- | Open a URI for playback.
 openStream :: XineHandle -> MRL -> IO ()
 openStream h uri = withXineHandle h $ \h_ -> do
@@ -140,6 +135,12 @@ play :: XineHandle -> IO ()
 play h = withXineHandle h $ \h_ -> do
     ret <- xine_play (hStream h_) 0 0
     unless (ret == 1) (fail "Failed to start playback")
+
+-- | Argument for 'seek'.
+data SeekArg
+    = SeekTime Int
+    | SeekPos Int
+      deriving (Eq, Show)
 
 -- | Seek to a position or time in the stream.
 --
