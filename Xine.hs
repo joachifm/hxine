@@ -172,7 +172,7 @@ close h@(XineHandle hv) = do
 -- before using them.
 ------------------------------------------------------------------------------
 
--- | Open an new stream for the given MRL.
+-- | Open a new stream for the given MRL.
 openStream :: XineHandle -> MRL -> IO StreamId
 openStream h uri = do
     modifyXineHandle h $ \h_ -> do
