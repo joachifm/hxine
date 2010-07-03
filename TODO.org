@@ -11,7 +11,8 @@
 ** TODO OSD
 * TODO Proper implementation of Data                            :enhancement:
 * TODO Re-order code in Foreign.chs to exactly mirror xine.h           :task:
-* TODO Support multiple streams for a XineHandle
+* DONE Support multiple streams for a XineHandle
+CLOSED: [2010-07-03 Sat 18:03]
 
 Maybe change XineHandle_ to
 
