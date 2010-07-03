@@ -389,7 +389,8 @@ deriving instance Eq Speed
 -- xine_stream_t *xine_stream_new (xine_t *self,
 --     xine_audio_port *ao, xine_video_port_t *vo)
 --
--- Returns xine_stream_t* if OK, NULL on error.
+-- Returns xine_stream_t* if OK, NULL on error (use 'xine_get_error' for
+-- details).
 {#fun unsafe xine_stream_new
  {withEngine* `Engine'
  ,withAudioPort* `AudioPort'
@@ -428,7 +429,7 @@ combineAffection xs = foldr1 (.&.) (map enum2cint xs)
 --
 -- int xine_open (xine_stream_t *stream, const char *mrl)
 --
--- Returns 1 if OK, 0 on error.
+-- Returns 1 if OK, 0 on error (use 'xine_get_error' for details).
 {#fun unsafe xine_open
  {withStream* `Stream'
  ,withCAString* `MRL'} -> `Int' cint2int#}
@@ -439,7 +440,7 @@ combineAffection xs = foldr1 (.&.) (map enum2cint xs)
 --
 -- int xine_play (xine_stream_t *stream, int start_pos, int start_time)
 --
--- Returns 1 if OK, 0 on error.
+-- Returns 1 if OK, 0 on error (use 'xine_get_error' for details).
 {#fun unsafe xine_play
  {withStream* `Stream'
  ,int2cint `Int'
@@ -452,7 +453,7 @@ combineAffection xs = foldr1 (.&.) (map enum2cint xs)
 --
 -- int xine_trick_mode (xine_stream_t *stream, int mode, int value)
 --
--- Returns 1 if OK, 0 on error.
+-- Returns 1 if OK, 0 on error (use 'xine_get_error' for details).
 {#fun unsafe xine_trick_mode
  {withStream* `Stream'
  ,enum2cint `TrickMode'
@@ -474,7 +475,7 @@ combineAffection xs = foldr1 (.&.) (map enum2cint xs)
 {#fun unsafe xine_stop {withStream* `Stream'} -> `()'#}
 
 -- | Free all stream-related resources.
--- The stream stays valid for new xine_open.
+-- The stream stays valid for new 'xine_open'.
 --
 -- Header declaration:
 --
