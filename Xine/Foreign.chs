@@ -21,9 +21,9 @@ module Xine.Foreign (
     xine_close_audio_driver, xine_close_video_driver, xine_exit,
     -- * Stream handling
     Stream, StreamParam(..), Speed(..), NormalSpeed(..), Zoom(..),
-    AspectRatio(..), MRL, EngineParam(..),
-    xine_stream_new, xine_open, xine_play, xine_stop, xine_close,
-    xine_engine_set_param, xine_engine_get_param,
+    AspectRatio(..), MRL, EngineParam(..), Affection(..),
+    xine_stream_new, xine_stream_master_slave, xine_open, xine_play,
+    xine_stop, xine_close, xine_engine_set_param, xine_engine_get_param,
     xine_set_param, xine_get_param,
     -- * Information retrieval
     EngineStatus(..), XineError(..),
@@ -31,6 +31,7 @@ module Xine.Foreign (
     ) where
 
 import Control.Monad (liftM)
+import Data.Bits
 import Foreign
 import Foreign.C
 
@@ -378,6 +379,33 @@ deriving instance Eq Speed
  {withEngine* `Engine'
  ,withAudioPort* `AudioPort'
  ,withVideoPort* `VideoPort'} -> `(Maybe Stream)' peekStream*#}
+
+-- | Make one stream the slave of another.
+-- Certain operations on the master stream are also applied to the slave
+-- stream.
+--
+-- Header declaration:
+--
+-- int xine_stream_master_slave (xine_stream_t *master, xine_stream_t *slave,
+--                               int affection)
+--
+-- returns 1 on success, 0 on failure.
+{#fun unsafe xine_stream_master_slave
+ {withStream* `Stream'
+ ,withStream* `Stream'
+ ,combineAffection `[Affection]'} -> `Int' fromIntegral#}
+
+-- | The affection determines which actions on the master stream
+-- are also to be applied to the slave stream. See 'xine_stream_master_slave'.
+{#enum define Affection
+           {XINE_MASTER_SLAVE_PLAY as AffectionPlay
+           ,XINE_MASTER_SLAVE_STOP as AffectionStop
+           ,XINE_MASTER_SLAVE_SPEED as AffectionSpeed}#}
+
+-- | Affections can be ORed together.
+combineAffection :: [Affection] -> CInt
+combineAffection [] = enum2cint AffectionSpeed
+combineAffection xs = foldr1 (.&.) (map enum2cint xs)
 
 -- | Open a stream.
 --
