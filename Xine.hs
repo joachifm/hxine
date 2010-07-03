@@ -34,8 +34,8 @@ module Xine (
     SeekArg(..),
     play, seek, stop, pause,
     -- * Information retrieval
-    EngineStatus(..),
-    getStatus
+    EngineStatus(..), MetaType(..),
+    getStatus, getMetadata
     ) where
 
 import Xine.Foreign
@@ -258,3 +258,7 @@ getStatus h = withXineHandle h $ \h_ ->
     case hCurrent h_ of
         Just sid -> xine_get_status (fromJust $ lookupStream sid (hStreams h_))
         Nothing  -> return Idle
+
+-- | Get meta data about the given stream.
+getMetadata :: XineHandle -> StreamId -> MetaType -> IO String
+getMetadata h sid m = withStream h sid $ \st -> xine_get_meta_info st m
