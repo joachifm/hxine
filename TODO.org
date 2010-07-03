@@ -11,3 +11,21 @@
 ** TODO OSD
 * TODO Proper implementation of Data                            :enhancement:
 * TODO Re-order code in Foreign.chs to exactly mirror xine.h           :task:
+* TODO Support multiple streams for a XineHandle
+
+Maybe change XineHandle_ to
+
+data XineHandle_ = XineHandle_
+    { ..
+    , hStreams :: !(IntMap Stream)
+    , hCurrentStream :: !(Maybe StreamId)
+    ..
+    }
+
+type StreamId = Int
+
+play :: XineHandle -> StreamId -> IO ()
+play ..
+
+playCurrent :: XineHandle -> IO ()
+playCurrent
