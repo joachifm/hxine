@@ -21,10 +21,10 @@ module Xine.Foreign (
     xine_close_audio_driver, xine_close_video_driver, xine_exit,
     -- * Stream handling
     Stream, StreamParam(..), Speed(..), NormalSpeed(..), Zoom(..),
-    AspectRatio(..), MRL, EngineParam(..), Affection(..),
+    AspectRatio(..), MRL, EngineParam(..), Affection(..), TrickMode(..),
     xine_stream_new, xine_stream_master_slave, xine_open, xine_play,
-    xine_stop, xine_close, xine_engine_set_param, xine_engine_get_param,
-    xine_set_param, xine_get_param,
+    xine_trick_mode, xine_stop, xine_close, xine_engine_set_param,
+    xine_engine_get_param, xine_set_param, xine_get_param,
     -- * Information retrieval
     EngineStatus(..), XineError(..),
     xine_get_error, xine_get_status
@@ -436,6 +436,26 @@ combineAffection xs = foldr1 (.&.) (map enum2cint xs)
  {withStream* `Stream'
  ,int2cint `Int'
  ,int2cint `Int'} -> `Int' cint2int#}
+
+-- | Set xine to a trick mode for fast forward, backwards playback,
+-- low latency seeking.
+--
+-- Header declaration:
+--
+-- int xine_trick_mode (xine_stream_t *stream, int mode, int value)
+--
+-- Returns 1 if OK, 0 on error.
+{#fun unsafe xine_trick_mode
+ {withStream* `Stream'
+ ,enum2cint `TrickMode'
+ ,int2cint `Int'} -> `Int' cint2int#}
+
+{#enum define TrickMode
+           {XINE_TRICK_MODE_OFF as TrickOff
+           ,XINE_TRICK_MODE_SEEK_TO_POSITION as TrickSeekToPosition
+           ,XINE_TRICK_MODE_SEEK_TO_TIME as TrickSeekToTime
+           ,XINE_TRICK_MODE_FAST_FORWARD as TrickFastForward
+           ,XINE_TRICK_MODE_FAST_REWIND as TrickRewind}#}
 
 -- | Stop stream playback.
 -- The stream stays valid for new 'xine_open' or 'xine_play'.
