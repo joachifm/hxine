@@ -124,13 +124,20 @@ type MRL = String
 
 int2bool = (/= 0)
 
+int2cint :: Int -> CInt
+int2cint = fromIntegral
+
+cint2int :: CInt -> Int
+cint2int = fromIntegral
+
 cint2enum :: Enum a => CInt -> a
-cint2enum = toEnum . fromIntegral
+cint2enum = toEnum . cint2int
 
 enum2cint :: Enum a => a -> CInt
-enum2cint = fromIntegral . fromEnum
+enum2cint = int2cint . fromEnum
 
-peekInt = liftM fromIntegral . peek
+peekInt :: Ptr CInt -> IO Int
+peekInt = liftM cint2int . peek
 
 maybeForeignPtr_ c x | x == nullPtr = return Nothing
                      | otherwise    = (Just . c) `liftM` newForeignPtr_ x
@@ -178,9 +185,9 @@ withMaybeString (Just s) f = withCString s f
 --
 -- returns 1 if compatible, 0 otherwise.
 {#fun pure xine_check_version
- {fromIntegral `Int',
-  fromIntegral `Int',
-  fromIntegral `Int'} -> `Bool' int2bool#}
+ {int2cint `Int',
+  int2cint `Int',
+  int2cint `Int'} -> `Bool' int2bool#}
 
 ------------------------------------------------------------------------------
 -- Global engine handling
@@ -393,7 +400,7 @@ deriving instance Eq Speed
 {#fun unsafe xine_stream_master_slave
  {withStream* `Stream'
  ,withStream* `Stream'
- ,combineAffection `[Affection]'} -> `Int' fromIntegral#}
+ ,combineAffection `[Affection]'} -> `Int' cint2int#}
 
 -- | The affection determines which actions on the master stream
 -- are also to be applied to the slave stream. See 'xine_stream_master_slave'.
@@ -416,7 +423,7 @@ combineAffection xs = foldr1 (.&.) (map enum2cint xs)
 -- Returns 1 if OK, 0 on error.
 {#fun unsafe xine_open
  {withStream* `Stream'
- ,withCAString* `MRL'} -> `Int' fromIntegral#}
+ ,withCAString* `MRL'} -> `Int' cint2int#}
 
 -- | Play a stream from a given position.
 --
@@ -427,8 +434,8 @@ combineAffection xs = foldr1 (.&.) (map enum2cint xs)
 -- Returns 1 if OK, 0 on error.
 {#fun unsafe xine_play
  {withStream* `Stream'
- ,fromIntegral `Int'
- ,fromIntegral `Int'} -> `Int' fromIntegral#}
+ ,int2cint `Int'
+ ,int2cint `Int'} -> `Int' cint2int#}
 
 -- | Stop stream playback.
 -- The stream stays valid for new 'xine_open' or 'xine_play'.
@@ -454,7 +461,7 @@ combineAffection xs = foldr1 (.&.) (map enum2cint xs)
 {#fun unsafe xine_engine_set_param
  {withEngine* `Engine'
  ,enum2cint `EngineParam'
- ,fromIntegral `Int'} -> `()'#}
+ ,int2cint `Int'} -> `()'#}
 
 -- | Get engine parameter.
 --
@@ -463,7 +470,7 @@ combineAffection xs = foldr1 (.&.) (map enum2cint xs)
 -- int xine_engine_get_param(xine_t *self, int param)
 {#fun unsafe xine_engine_get_param
  {withEngine* `Engine'
- ,enum2cint `EngineParam'} -> `Int' fromIntegral#}
+ ,enum2cint `EngineParam'} -> `Int' cint2int#}
 
 -- | Set stream parameter.
 --
