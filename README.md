@@ -23,8 +23,8 @@ To play an audio file, simply do:
     > import qualified Xine
     > main = do
     >     h <- Xine.open
-    >     Xine.openStream h "track.ogg"
-    >     Xine.play h
+    >     sid <- Xine.openStream h "track.ogg"
+    >     Xine.play h sid
 
 Note that Xine defaults to auto-detecting audio and video drivers.
 
@@ -34,8 +34,8 @@ To configure xine before using it, for example to play video files, use
     > import qualified Xine
     > main = do
     >     h <- Xine.openWith defaultConf { visualType = X11 }
-    >     Xine.openStream h "video.ogm"
-    >     Xine.play h
+    >     sid <- Xine.openStream h "video.ogm"
+    >     Xine.play h sid
 
 # Author
 Joachim Fasting \<joachim.fasting@gmail.com\>

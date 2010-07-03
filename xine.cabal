@@ -25,7 +25,8 @@ library
     hs-source-dirs: .
     exposed-modules: Xine,
                      Xine.Foreign
-    build-depends: base ==4.2.*
+    build-depends: base ==4.2.*,
+                   containers ==0.3.*
     build-tools: c2hs
     extensions: CPP, ForeignFunctionInterface, StandaloneDeriving
     includes: xine.h
