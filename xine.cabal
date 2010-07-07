@@ -32,4 +32,4 @@ library
     includes: xine.h
     extra-libraries: xine
     ghc-options: -Wall
-    ghc-prof-options: -prof -auto-all -caf-all
+    ghc-prof-options: -prof -auto-all
