@@ -132,36 +132,47 @@ type MRL = String
 
 cint2bool :: CInt -> Bool
 cint2bool = (/= 0)
+{-# INLINE cint2bool #-}
 
 int2cint :: Int -> CInt
 int2cint = fromIntegral
+{-# INLINE int2cint #-}
 
 cint2int :: CInt -> Int
 cint2int = fromIntegral
+{-# INLINE cint2int #-}
 
 cuint2int :: CUInt -> Int
 cuint2int = fromIntegral
+{-# INLINE cuint2int #-}
 
 cint2enum :: Enum a => CInt -> a
 cint2enum = toEnum . cint2int
+{-# INLINE cint2enum #-}
 
 enum2cint :: Enum a => a -> CInt
 enum2cint = int2cint . fromEnum
+{-# INLINE enum2cint #-}
 
 peekInt :: Ptr CInt -> IO Int
 peekInt = liftM cint2int . peek
+{-# INLINE peekInt #-}
 
 -- For pointers which may be NULL.
 maybeForeignPtr_ c x | x == nullPtr = return Nothing
                      | otherwise    = (Just . c) `liftM` newForeignPtr_ x
 
 peekEngine = liftM Engine . newForeignPtr_
+{-# INLINE peekEngine #-}
 
 peekAudioPort = maybeForeignPtr_ AudioPort
+{-# INLINE peekAudioPort #-}
 
 peekVideoPort = maybeForeignPtr_ VideoPort
+{-# INLINE peekVideoPort #-}
 
 peekStream = maybeForeignPtr_ Stream
+{-# INLINE peekStream #-}
 
 -- XXX: just a temporary hack until we can actually support
 -- passing a custom struct to functions which support it.
