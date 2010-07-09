@@ -51,6 +51,13 @@ you may use the low-level FFI binding by
 
     > import Xine.Foreign
 
+# Resources
+
+* [xine-lib hacker's guide]
+* `/usr/include/xine.h`
+
+[xine-lib hacker's guide]: http://www.xine-project.org/hackersguide
+
 # Bugs and deficiencies
 
 * The binding doesn't yet support video playback.
