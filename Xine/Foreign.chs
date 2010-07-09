@@ -11,6 +11,7 @@
 -- Portability : not portable
 --
 -- A simple binding to xine-lib. Low-level bindings.
+-- Made for xine-lib version 1.1.18.1
 
 module Xine.Foreign (
     -- * Version information
@@ -56,6 +57,8 @@ import Foreign.C
 {#pointer *xine_video_port_t as VideoPort foreign newtype#}
 {#pointer *xine_stream_t as Stream foreign newtype#}
 
+-- XXX: just a hack. We really want to be able to pass
+-- custom structs to functions. See 'withData', 'xine_open_audio_driver'.
 newtype Data = Data (Ptr Data)
 
 -- | Media Resource Locator.
@@ -148,6 +151,7 @@ enum2cint = int2cint . fromEnum
 peekInt :: Ptr CInt -> IO Int
 peekInt = liftM cint2int . peek
 
+-- For pointers which may be NULL.
 maybeForeignPtr_ c x | x == nullPtr = return Nothing
                      | otherwise    = (Just . c) `liftM` newForeignPtr_ x
 
@@ -159,8 +163,11 @@ peekVideoPort = maybeForeignPtr_ VideoPort
 
 peekStream = maybeForeignPtr_ Stream
 
+-- XXX: just a temporary hack until we can actually support
+-- passing a custom struct to functions which support it.
 withData f = f nullPtr
 
+-- Handle strings which may be NULL.
 withMaybeString :: Maybe String -> (CString -> IO a) -> IO a
 withMaybeString Nothing f  = f nullPtr
 withMaybeString (Just s) f = withCString s f
