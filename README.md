@@ -51,6 +51,10 @@ you may use the low-level FFI binding by
 
     > import Xine.Foreign
 
+# Bugs and deficiencies
+
+* The binding doesn't yet support video playback.
+
 # Author
 Joachim Fasting \<joachim.fasting@gmail.com\>
 
