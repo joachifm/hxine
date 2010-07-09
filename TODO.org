@@ -30,3 +30,4 @@ play ..
 
 playCurrent :: XineHandle -> IO ()
 playCurrent
+* TODO Proper exception type for xine-lib errors                :enhancement:
