@@ -127,7 +127,8 @@ type MRL = String
 -- Marshalling
 ------------------------------------------------------------------------------
 
-int2bool = (/= 0)
+cint2bool :: CInt -> Bool
+cint2bool = (/= 0)
 
 int2cint :: Int -> CInt
 int2cint = fromIntegral
@@ -195,7 +196,7 @@ withMaybeString (Just s) f = withCString s f
 {#fun pure xine_check_version
  {int2cint `Int',
   int2cint `Int',
-  int2cint `Int'} -> `Bool' int2bool#}
+  int2cint `Int'} -> `Bool' cint2bool#}
 
 ------------------------------------------------------------------------------
 -- Global engine handling
