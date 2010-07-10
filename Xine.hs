@@ -51,13 +51,13 @@ import Data.Maybe (fromJust)
 
 -- | Xine configuration.
 data XineConf = XineConf
-    { audioDriver :: Maybe String
+    { audioDriver :: !(Maybe String)
       -- ^ Audio driver. Use 'Nothing' for
       -- auto-detection.
-    , videoDriver :: Maybe String
+    , videoDriver :: !(Maybe String)
       -- ^ Video driver. Use 'Nothing' for
       -- auto-detection.
-    , visualType :: VisualType
+    , visualType :: !VisualType
       -- ^ Video output type. Use 'None' to disable video output.
     }
 
