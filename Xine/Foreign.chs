@@ -236,14 +236,16 @@ withMaybeString (Just s) f = withCString s f
                          ,XINE_VISUAL_TYPE_RAW as Raw
                          }#}
 
--- | Pre-init the Xine engine.
+deriving instance Eq VisualType
+
+-- | Pre-init the xine engine.
 --
 -- Header declaration:
 --
 -- xine_t *xine_new (void)
 {#fun xine_new {} -> `Engine' peekEngine*#}
 
--- | Post-init the Xine engine.
+-- | Post-init the xine engine.
 --
 -- Header declaration:
 --
@@ -570,7 +572,7 @@ combineAffection xs = foldr1 (.&.) (map enum2cint xs)
 deriving instance Eq EngineStatus
 deriving instance Show EngineStatus
 
--- | Xine error codes.
+-- | xine error codes.
 {#enum define XineError
            {XINE_ERROR_NONE as NoError
            ,XINE_ERROR_NO_INPUT_PLUGIN as NoInputPlugin
