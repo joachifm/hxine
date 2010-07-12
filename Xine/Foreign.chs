@@ -241,14 +241,14 @@ withMaybeString (Just s) f = withCString s f
 -- Header declaration:
 --
 -- xine_t *xine_new (void)
-{#fun unsafe xine_new {} -> `Engine' peekEngine*#}
+{#fun xine_new {} -> `Engine' peekEngine*#}
 
 -- | Post-init the Xine engine.
 --
 -- Header declaration:
 --
 -- void xine_init (xine_t *self)
-{#fun unsafe xine_init {withEngine* `Engine'} -> `()'#}
+{#fun xine_init {withEngine* `Engine'} -> `()'#}
 
 -- | Initialise audio driver.
 --
@@ -262,7 +262,7 @@ withMaybeString (Just s) f = withCString s f
 -- data: special data struct for ui/driver communication
 --
 -- May return NULL if the driver failed to load.
-{#fun unsafe xine_open_audio_driver
+{#fun xine_open_audio_driver
  {withEngine* `Engine'
  ,withMaybeString* `(Maybe String)'
  ,withData- `Data'} -> `(Maybe AudioPort)' peekAudioPort*#}
@@ -281,7 +281,7 @@ withMaybeString (Just s) f = withCString s f
 -- visual : video driver flavor selector
 --
 -- May return NULL if the driver failed to load.
-{#fun unsafe xine_open_video_driver
+{#fun xine_open_video_driver
  {withEngine* `Engine'
  ,withMaybeString* `(Maybe String)'
  ,enum2cint `VisualType'
@@ -292,7 +292,7 @@ withMaybeString (Just s) f = withCString s f
 -- Header declaration:
 --
 -- void xine_close_audio_driver (xine_t *self, xine_audio_port_t *driver)
-{#fun unsafe xine_close_audio_driver
+{#fun xine_close_audio_driver
  {withEngine* `Engine'
  ,withAudioPort* `AudioPort'} -> `()'#}
 
@@ -301,7 +301,7 @@ withMaybeString (Just s) f = withCString s f
 -- Header declaration:
 --
 -- void xine_close_video_driver (xine_t *self, xine_video_port_t *driver)
-{#fun unsafe xine_close_video_driver
+{#fun xine_close_video_driver
  {withEngine* `Engine'
  ,withVideoPort* `VideoPort'} -> `()'#}
 
@@ -310,7 +310,7 @@ withMaybeString (Just s) f = withCString s f
 -- Header declaration:
 --
 -- void xine_exit (xine_t *self)
-{#fun unsafe xine_exit {withEngine* `Engine'} -> `()'#}
+{#fun xine_exit {withEngine* `Engine'} -> `()'#}
 
 ------------------------------------------------------------------------------
 -- Stream handling
@@ -410,7 +410,7 @@ deriving instance Eq Speed
 --
 -- Returns xine_stream_t* if OK, NULL on error (use 'xine_get_error' for
 -- details).
-{#fun unsafe xine_stream_new
+{#fun xine_stream_new
  {withEngine* `Engine'
  ,withAudioPort* `AudioPort'
  ,withVideoPort* `VideoPort'} -> `(Maybe Stream)' peekStream*#}
@@ -425,7 +425,7 @@ deriving instance Eq Speed
 --                               int affection)
 --
 -- returns 1 on success, 0 on failure.
-{#fun unsafe xine_stream_master_slave
+{#fun xine_stream_master_slave
  {withStream* `Stream'
  ,withStream* `Stream'
  ,combineAffection `[Affection]'} -> `Int' cint2int#}
@@ -449,7 +449,7 @@ combineAffection xs = foldr1 (.&.) (map enum2cint xs)
 -- int xine_open (xine_stream_t *stream, const char *mrl)
 --
 -- Returns 1 if OK, 0 on error (use 'xine_get_error' for details).
-{#fun unsafe xine_open
+{#fun xine_open
  {withStream* `Stream'
  ,withCAString* `MRL'} -> `Int' cint2int#}
 
@@ -460,7 +460,7 @@ combineAffection xs = foldr1 (.&.) (map enum2cint xs)
 -- int xine_play (xine_stream_t *stream, int start_pos, int start_time)
 --
 -- Returns 1 if OK, 0 on error (use 'xine_get_error' for details).
-{#fun unsafe xine_play
+{#fun xine_play
  {withStream* `Stream'
  ,int2cint `Int'
  ,int2cint `Int'} -> `Int' cint2int#}
@@ -473,7 +473,7 @@ combineAffection xs = foldr1 (.&.) (map enum2cint xs)
 -- int xine_trick_mode (xine_stream_t *stream, int mode, int value)
 --
 -- Returns 1 if OK, 0 on error (use 'xine_get_error' for details).
-{#fun unsafe xine_trick_mode
+{#fun xine_trick_mode
  {withStream* `Stream'
  ,enum2cint `TrickMode'
  ,int2cint `Int'} -> `Int' cint2int#}
@@ -491,7 +491,7 @@ combineAffection xs = foldr1 (.&.) (map enum2cint xs)
 -- Header declaration:
 --
 -- void xine_stop (xine_stream *stream)
-{#fun unsafe xine_stop {withStream* `Stream'} -> `()'#}
+{#fun xine_stop {withStream* `Stream'} -> `()'#}
 
 -- | Free all stream-related resources.
 -- The stream stays valid for new 'xine_open'.
@@ -499,14 +499,14 @@ combineAffection xs = foldr1 (.&.) (map enum2cint xs)
 -- Header declaration:
 --
 -- void xine_close (xine_stream_t *stream)
-{#fun unsafe xine_close {withStream* `Stream'} -> `()'#}
+{#fun xine_close {withStream* `Stream'} -> `()'#}
 
 -- | Ask current input plugin to eject media.
 --
 -- Header declaration:
 --
 -- int xine_eject (xine_stream_t *stream)
-{#fun unsafe xine_eject {withStream* `Stream'} -> `Int' cint2int#}
+{#fun xine_eject {withStream* `Stream'} -> `Int' cint2int#}
 
 -- | Stop playback, dispose all stream-related resources.
 -- The stream is no longer valid after this.
@@ -514,14 +514,14 @@ combineAffection xs = foldr1 (.&.) (map enum2cint xs)
 -- Header declaration:
 --
 -- void xine_dispose (xine_stream_t *stream)
-{#fun unsafe xine_dispose {withStream* `Stream'} -> `()'#}
+{#fun xine_dispose {withStream* `Stream'} -> `()'#}
 
 -- | Set engine parameter.
 --
 -- Header declaration:
 --
 -- void xine_engine_set_param (xine_t *self, int param, int value)
-{#fun unsafe xine_engine_set_param
+{#fun xine_engine_set_param
  {withEngine* `Engine'
  ,enum2cint `EngineParam'
  ,int2cint `Int'} -> `()'#}
@@ -531,7 +531,7 @@ combineAffection xs = foldr1 (.&.) (map enum2cint xs)
 -- Header declaration:
 --
 -- int xine_engine_get_param(xine_t *self, int param)
-{#fun unsafe xine_engine_get_param
+{#fun xine_engine_get_param
  {withEngine* `Engine'
  ,enum2cint `EngineParam'} -> `Int' cint2int#}
 
@@ -540,7 +540,7 @@ combineAffection xs = foldr1 (.&.) (map enum2cint xs)
 -- Header declaration:
 --
 -- void xine_set_param (xine_stream_t *stream, int param, int value)
-{#fun unsafe xine_set_param
+{#fun xine_set_param
  `(Enum a)' =>
  {withStream* `Stream'
  ,enum2cint `StreamParam'
@@ -551,7 +551,7 @@ combineAffection xs = foldr1 (.&.) (map enum2cint xs)
 -- Header declaration:
 --
 -- int xine_get_param (xine_stream_t *stream, int param)
-{#fun unsafe xine_get_param
+{#fun xine_get_param
  `(Enum a)' =>
  {withStream* `Stream'
  ,enum2cint `StreamParam'} -> `a' cint2enum#}
@@ -586,13 +586,13 @@ deriving instance Show XineError
 -- Header declaration:
 --
 -- int xine_get_error (xine_stream_t *stream)
-{#fun unsafe xine_get_error
+{#fun xine_get_error
  {withStream* `Stream'} -> `XineError' cint2enum#}
 
 -- | Get current xine engine status.
 --
 -- int xine_get_status (xine_stream_t *stream)
-{#fun unsafe xine_get_status
+{#fun xine_get_status
  {withStream* `Stream'} -> `EngineStatus' cint2enum#}
 
 -- | Find the audio language of the given channel (use -1 for
@@ -606,7 +606,7 @@ deriving instance Show XineError
 -- lang must point to a buffer of at least XINE_LANG_MAX bytes.
 --
 -- Returns 1 on success, 0 on failure.
-{#fun unsafe xine_get_audio_lang
+{#fun xine_get_audio_lang
           {withStream* `Stream'
           ,int2cint `Int'
           ,allocLangBuf- `String' peekCString*} -> `Int' cint2int#}
@@ -625,7 +625,7 @@ allocLangBuf = allocaArray0 32
 -- lang must point to a buffer of at least XINE_LANG_MAX bytes.
 --
 -- Returns 1 on success, 0 on failure.
-{#fun unsafe xine_get_spu_lang
+{#fun xine_get_spu_lang
           {withStream* `Stream'
           ,int2cint `Int'
           ,allocLangBuf- `String' peekCString*} -> `Int' cint2int#}
@@ -638,7 +638,7 @@ allocLangBuf = allocaArray0 32
 --                          int *pos_time, int *length_time)
 --
 -- Returns 1 on success, 0 on failure.
-{#fun unsafe xine_get_pos_length
+{#fun xine_get_pos_length
           {withStream* `Stream'
           ,alloca- `Int' peekInt*
           ,alloca- `Int' peekInt*
@@ -649,7 +649,7 @@ allocLangBuf = allocaArray0 32
 -- Header declaration:
 --
 -- int32_t xine_get_stream_info (xine_stream_t *stream, int info)
-{#fun unsafe xine_get_stream_info
+{#fun xine_get_stream_info
           {withStream* `Stream'
           ,enum2cint `InfoType'} -> `Int' cuint2int#}
 
@@ -658,7 +658,7 @@ allocLangBuf = allocaArray0 32
 -- Header declaration:
 --
 -- const char *xine_get_meta_info (xine_stream_t *stream, int info)
-{#fun unsafe xine_get_meta_info
+{#fun xine_get_meta_info
           {withStream* `Stream'
           ,enum2cint `MetaType'} -> `String' peekCString*#}
 
