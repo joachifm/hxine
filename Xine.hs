@@ -61,7 +61,7 @@ data XineConf = XineConf
       -- ^ Video output type. Use 'None' to disable video output.
     }
 
--- | Default configuration.
+-- | Default configuration. Audio only.
 defaultConf :: XineConf
 defaultConf = XineConf
     { audioDriver = Nothing
@@ -139,7 +139,7 @@ withStream h sid f = withXineHandle h $ \hv -> do
         Just s -> f s
         Nothing -> fail $ "No such stream: " ++ show sid
 
--- | Open a new Xine handle using the default configuration.
+-- | Open a new Xine handle using 'defaultConf'.
 open :: IO XineHandle
 open = openWith defaultConf
 
