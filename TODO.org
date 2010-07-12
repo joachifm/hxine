@@ -32,3 +32,4 @@ playCurrent :: XineHandle -> IO ()
 playCurrent
 * TODO Proper exception type for xine-lib errors                :enhancement:
 * TODO Support video playback                                       :feature:
+Need to pass a Graphics.X11.Xlib.Visual to xine_open_video_driver
