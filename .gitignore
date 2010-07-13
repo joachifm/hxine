@@ -1,5 +1,7 @@
 ChangeLog
 *.chi
 *.chs.h
+*.hi
+*.o
 Xine/Foreign.hs
 dist/
