@@ -179,11 +179,11 @@ stop h sid = withStream h sid $ \st -> xine_stop st
 
 -- | Toggle pause.
 pause :: XineHandle -> StreamId -> IO ()
-pause h sid = withStream h sid $ \st -> do
-    s <- xine_get_param st Speed
-    let speed | s == Pause = Normal
-              | otherwise  = Pause
-    xine_set_param st Speed speed
+pause h sid = withStream h sid $ \st -> xine_get_param st Speed >>=
+    xine_set_param st Speed . toggle
+    where
+        toggle Pause = Normal
+        toggle _     = Pause
 
 ------------------------------------------------------------------------------
 -- Information retrieval
