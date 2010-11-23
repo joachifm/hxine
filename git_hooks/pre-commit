@@ -1,0 +1,80 @@
+#!/bin/sh
+#
+# TODO:
+# - Add a 'fascist' option
+#   git config commit.fascist 1 = do format checks and such, otherwise just buildtest
+#
+# Code:
+
+#set -x
+
+topdir=`git rev-parse --show-toplevel`
+cabal_file=`echo *.cabal | head -1`
+
+cd "$topdir"
+
+# Project-wide checks
+for x in `git diff-index --cached --name-only HEAD` ; do
+    case "$x" in
+        *.hs|*.chs)
+            # Configure if .cabal has changed
+            if [ "$cabal_file" -nt dist/setup-config ] ; then
+                cabal configure -v0 -O0 --ghc-options=-Werror
+            fi
+            cabal build -v0
+            if [ $? -ne 0 ] ; then
+                echo "Commit rejected: build failed" >&2
+                exit 1
+            fi
+
+            cabal haddock -v0 --hoogle --internal --hyperlink-source
+            if [ $? -ne 0 ] ; then
+                echo "Commit rejected: breaks documentation" >&2
+                exit 1
+            fi
+            ;;
+        *.cabal)
+            cabal check >/dev/null
+            if [ $? -ne 0 ] ; then
+                echo "Commit rejected: package description contains errors" >&2
+                exit 1
+            fi
+            ;;
+    esac
+done
+
+# Per-file checks
+for x in `git diff-index --cached --name-only HEAD` ; do
+    case "$x" in
+        *.hs)
+            # Formatting check
+
+            # Note, we do not silence grep so as to make it possible to
+            # see _where_ the whitespace is
+            grep -nHP '[ \t]+$' "$x"
+            if [ $? -eq 0 ] ; then
+                echo "Commit rejected: $x contains trailing whitespace" >&2
+                exit 1
+            fi
+
+            # Style check
+            hlint -i 'Eta reduce' "$x" >/dev/null
+            if [ $? -ne 0 ] ; then
+                echo "Commit rejected: $x contains style errors" >&2
+                exit 1
+            fi
+
+            # Module header check
+            # XXX: should verify that ALL required headers are present ...
+            grep -vE '^{-# (LANGUAGE|OPTIONS_GHC)' "$x" | head -10 \
+                | grep -qE '(Module|Copyright) *:'
+            if [ $? -ne 0 ] ; then
+                echo "Commit rejected: $x is missing required headers" >&2
+                exit 1
+            fi
+            ;;
+    esac
+done
+
+# Everything went better than expected
+exit 0
