@@ -39,10 +39,11 @@ module Xine (
     ) where
 
 import Xine.Foreign
+import Xine.Internal.Stream (StreamId, Streams)
+import qualified Xine.Internal.Stream as S
 
 import Control.Concurrent.MVar
 import Control.Monad (unless, when)
-import qualified Data.Map as M
 import Data.Maybe (fromJust)
 
 ------------------------------------------------------------------------------
@@ -84,33 +85,6 @@ data XineHandle_ = XineHandle_
     , hState :: !HandleState
     }
 
--- | Identifies an open stream.
-type StreamId = Int
-
--- A container for streams.
-data Streams = Streams
-    { mapping :: !(M.Map StreamId Stream)
-    , lastKey :: !StreamId
-    }
-
-emptyStreams :: Streams
-emptyStreams = Streams M.empty 0
-
-addStream :: Stream -> Streams -> Streams
-addStream x s =
-    let nextId = succ (lastKey s)
-    in s { mapping = M.insert nextId x (mapping s)
-         , lastKey = nextId }
-
-delStream :: StreamId -> Streams -> Streams
-delStream sid s = s { mapping = M.delete sid (mapping s) }
-
-lookupStream :: StreamId -> Streams -> Maybe Stream
-lookupStream sid s = M.lookup sid (mapping s)
-
-streams :: Streams -> [Stream]
-streams = M.elems . mapping
-
 -- | A xine-lib handle.
 newtype XineHandle = XineHandle (MVar XineHandle_)
 
@@ -135,7 +109,7 @@ withXineHandle h@(XineHandle hv) f = do
 -- A helper for using a given stream.
 withStream :: XineHandle -> StreamId -> (Stream -> IO a) -> IO a
 withStream h sid f = withXineHandle h $ \hv -> do
-    case lookupStream sid (hStreams hv) of
+    case S.lookup sid (hStreams hv) of
         Just s -> f s
         Nothing -> fail $ "No such stream: " ++ show sid
 
@@ -154,14 +128,14 @@ openWith conf = do
     vp <- maybe (fail "Failed to open the video driver") return =<<
           xine_open_video_driver engine (videoDriver conf) (visualType conf)
 
-    h_ <- newMVar $ XineHandle_ engine ap vp emptyStreams Nothing Open
+    h_ <- newMVar $ XineHandle_ engine ap vp S.empty Nothing Open
     return $ XineHandle h_
 
 -- | Close Xine handle. The handle is invalid after this.
 close :: XineHandle -> IO ()
 close h@(XineHandle hv) = do
     withXineHandle h $ \h_ -> do
-        mapM_ xine_close (streams $ hStreams h_)
+        mapM_ xine_close (S.streams $ hStreams h_)
         xine_close_audio_driver (hEngine h_) (hAudioPort h_)
         xine_close_video_driver (hEngine h_) (hVideoPort h_)
         xine_exit (hEngine h_)
@@ -188,18 +162,19 @@ openStream h uri = do
         unless (ret == 1) (fail "Failed to open MRL")
 
         -- Add the stream to the handle
-        let sm = addStream st (hStreams h_)
-        return $ h_ { hStreams = sm
-                    , hCurrent = Just (lastKey sm) }
+        let (s, i) = S.insert st (hStreams h_)
+        return $ h_ { hStreams = s
+                    , hCurrent = Just i }
+
     fromJust `fmap` getCurrent h
 
 -- | Close the specified stream.
 closeStream :: XineHandle -> StreamId -> IO ()
-closeStream h sid = modifyXineHandle h $ \h_ -> do
-    case lookupStream sid (hStreams h_) of
+closeStream h sid = modifyXineHandle h $ \h_ ->
+    case S.lookup sid (hStreams h_) of
         Just st -> do
             xine_close st
-            return $ h_ { hStreams = delStream sid (hStreams h_) }
+            return $ h_ { hStreams = S.delete sid (hStreams h_) }
         Nothing -> return h_
 
 -- | Get the current stream, if any.
@@ -256,7 +231,7 @@ pause h sid = withStream h sid $ \st -> do
 getStatus :: XineHandle -> IO EngineStatus
 getStatus h = withXineHandle h $ \h_ ->
     case hCurrent h_ of
-        Just sid -> xine_get_status (fromJust $ lookupStream sid (hStreams h_))
+        Just sid -> xine_get_status (fromJust $ S.lookup sid (hStreams h_))
         Nothing  -> return Idle
 
 -- | Get meta data about the given stream.
