@@ -35,8 +35,8 @@ To play an audio file, simply do:
 
 Note that Xine defaults to auto-detecting audio and video drivers.
 
-To configure xine before using it, for example to play video files, use
-`openWith` and supply a `XineConf` value:
+To configure xine before using it, for example to play video files (note, this
+doesn't work), use `openWith` and supply a `XineConf` value:
 
     > import qualified Xine
     > main = do
