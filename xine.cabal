@@ -30,6 +30,7 @@ library
     build-tools: c2hs
     extensions: CPP, ForeignFunctionInterface, StandaloneDeriving
     includes: xine.h
+    pkgconfig-depends: libxine >= 1.1.18.1 && < 2
     extra-libraries: xine
     ghc-options: -Wall
     ghc-prof-options: -prof -auto-all
