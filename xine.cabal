@@ -26,6 +26,7 @@ library
     exposed-modules: Xine,
                      Xine.Foreign
     other-modules:
+        Xine.Internal.Handle,
         Xine.Internal.Stream
     build-depends: base ==4.2.*,
                    containers ==0.3.*
