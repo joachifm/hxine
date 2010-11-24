@@ -614,8 +614,15 @@ deriving instance Show XineError
           ,int2cint `Int'
           ,allocLangBuf- `String' peekCString*} -> `Int' cint2int#}
 
--- XXX: read the constant XINE_LANG_MAX
-allocLangBuf = allocaArray0 32
+-- This is a trick to read the #define'd constant XINE_LANG_MAX
+{#enum define Wrapping
+    {XINE_LANG_MAX as LangMax}#}
+
+cXINE_LANG_MAX :: Int
+cXINE_LANG_MAX = fromEnum LangMax
+
+-- Helper to allocate a language buffer
+allocLangBuf = allocaArray0 cXINE_LANG_MAX
 
 -- | Find the spu language of the given channel (use -1 for
 -- current channel).
