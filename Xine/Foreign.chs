@@ -43,6 +43,51 @@ import Data.Bits
 import Foreign
 import Foreign.C
 
+------------------------------------------------------------------------------
+-- Marshalling helpers
+------------------------------------------------------------------------------
+
+cint2bool :: CInt -> Bool
+cint2bool = (/= 0)
+{-# INLINE cint2bool #-}
+
+int2cint :: Int -> CInt
+int2cint = fromIntegral
+{-# INLINE int2cint #-}
+
+cint2int :: CInt -> Int
+cint2int = fromIntegral
+{-# INLINE cint2int #-}
+
+cuint2int :: CUInt -> Int
+cuint2int = fromIntegral
+{-# INLINE cuint2int #-}
+
+cint2enum :: Enum a => CInt -> a
+cint2enum = toEnum . cint2int
+{-# INLINE cint2enum #-}
+
+enum2cint :: Enum a => a -> CInt
+enum2cint = int2cint . fromEnum
+{-# INLINE enum2cint #-}
+
+peekInt :: Ptr CInt -> IO Int
+peekInt = liftM cint2int . peek
+{-# INLINE peekInt #-}
+
+-- For pointers which may be NULL.
+maybeForeignPtr_ c x | x == nullPtr = return Nothing
+                     | otherwise    = (Just . c) `liftM` newForeignPtr_ x
+
+-- Handle strings which may be NULL.
+withMaybeString :: Maybe String -> (CString -> IO a) -> IO a
+withMaybeString Nothing f  = f nullPtr
+withMaybeString (Just s) f = withCString s f
+
+------------------------------------------------------------------------------
+-- Foreign interface
+------------------------------------------------------------------------------
+
 #include <xine.h>
 
 -- Define the name of the dynamic library that has to be loaded before any of
@@ -52,16 +97,173 @@ import Foreign.C
 -- between the prefix and the stem of the identifiers are also removed.
 {#context lib="xine" prefix="xine"#}
 
--- Opaque types used for structures that are never dereferenced on the
--- Haskell side.
+------------------------------------------------------------------------------
+-- Version information
+------------------------------------------------------------------------------
+
+-- | Get xine-lib version string.
+--
+-- Header declaration:
+--
+-- const char *xine_get_version_string (void)
+{#fun pure xine_get_version_string {} -> `String' peekCString*#}
+
+-- | Get version as a triple: major, minor, sub
+--
+-- Header declaration:
+--
+-- void xine_get_version (int *major, int *minor, int *sub)
+{#fun pure xine_get_version
+ {alloca- `Int' peekInt*,
+  alloca- `Int' peekInt*,
+  alloca- `Int' peekInt*} -> `()'#}
+
+-- | Compare given version to xine-lib version (major, minor, sub).
+--
+-- Header declaration:
+--
+-- int xine_check_version (int major, int minor, int sub)
+--
+-- returns 1 if compatible, 0 otherwise.
+{#fun pure xine_check_version
+ {int2cint `Int',
+  int2cint `Int',
+  int2cint `Int'} -> `Bool' cint2bool#}
+
+------------------------------------------------------------------------------
+-- Global engine handling
+------------------------------------------------------------------------------
+
+-- | An opaque type, never dereferenced on the Haskell side
+-- XXX: document me
 {#pointer *xine_t as Engine foreign newtype#}
+
+peekEngine = liftM Engine . newForeignPtr_
+{-# INLINE peekEngine #-}
+
+-- | Valid visual types
+{#enum define VisualType {XINE_VISUAL_TYPE_NONE as None
+                         ,XINE_VISUAL_TYPE_X11 as X11
+                         ,XINE_VISUAL_TYPE_X11_2 as X11_2
+                         ,XINE_VISUAL_TYPE_AA as AA
+                         ,XINE_VISUAL_TYPE_FB as FB
+                         ,XINE_VISUAL_TYPE_GTK as GTK
+                         ,XINE_VISUAL_TYPE_DFB as DFB
+                         ,XINE_VISUAL_TYPE_PM as PM
+                         ,XINE_VISUAL_TYPE_DIRECTX as DirectX
+                         ,XINE_VISUAL_TYPE_CACA as CACA
+                         ,XINE_VISUAL_TYPE_MACOSX as MacOSX
+                         ,XINE_VISUAL_TYPE_XCB as XCB
+                         ,XINE_VISUAL_TYPE_RAW as Raw
+                         }#}
+
+deriving instance Eq VisualType
+
+-- | Pre-init the xine engine.
+--
+-- Header declaration:
+--
+-- xine_t *xine_new (void)
+{#fun xine_new {} -> `Engine' peekEngine*#}
+
+-- | Post-init the xine engine.
+--
+-- Header declaration:
+--
+-- void xine_init (xine_t *self)
+{#fun xine_init {withEngine* `Engine'} -> `()'#}
+
+-- XXX: just a hack. We really want to be able to pass custom structs to
+-- functions. See 'xine_open_audio_driver'.
+newtype Data = Data (Ptr Data)
+
+withData f = f nullPtr
+
+-- | An opaque type, never dereferenced on the Haskell side
+-- XXX: document me
 {#pointer *xine_audio_port_t as AudioPort foreign newtype#}
+
+peekAudioPort = maybeForeignPtr_ AudioPort
+{-# INLINE peekAudioPort #-}
+
+-- | Initialise audio driver.
+--
+-- Header declaration:
+--
+-- xine_audio_port_t *xine_open_audio_driver (xine_t *self, const char *id,
+--                        void *data)
+--
+-- id: identifier of the driver, may be NULL for auto-detection
+--
+-- data: special data struct for ui/driver communication
+--
+-- May return NULL if the driver failed to load.
+{#fun xine_open_audio_driver
+ {withEngine* `Engine'
+ ,withMaybeString* `(Maybe String)'
+ ,withData- `Data'} -> `(Maybe AudioPort)' peekAudioPort*#}
+
+-- | An opaque type, never dereferenced on the Haskell side
+-- XXX: document me
 {#pointer *xine_video_port_t as VideoPort foreign newtype#}
+
+peekVideoPort = maybeForeignPtr_ VideoPort
+{-# INLINE peekVideoPort #-}
+
+-- | Initialise video driver.
+--
+-- Header declaration:
+--
+-- xine_video_port_t *xine_open_video_driver (xine_t *self, const char *id,
+--                        int visual, void *data)
+--
+-- id: identifier of the driver, may be NULL for auto-detection
+--
+-- data: special data struct for ui/driver communication
+--
+-- visual : video driver flavor selector
+--
+-- May return NULL if the driver failed to load.
+{#fun xine_open_video_driver
+ {withEngine* `Engine'
+ ,withMaybeString* `(Maybe String)'
+ ,enum2cint `VisualType'
+ ,withData- `Data'} -> `(Maybe VideoPort)' peekVideoPort*#}
+
+-- | Close audio port.
+--
+-- Header declaration:
+--
+-- void xine_close_audio_driver (xine_t *self, xine_audio_port_t *driver)
+{#fun xine_close_audio_driver
+ {withEngine* `Engine'
+ ,withAudioPort* `AudioPort'} -> `()'#}
+
+-- | Close video port.
+--
+-- Header declaration:
+--
+-- void xine_close_video_driver (xine_t *self, xine_video_port_t *driver)
+{#fun xine_close_video_driver
+ {withEngine* `Engine'
+ ,withVideoPort* `VideoPort'} -> `()'#}
+
+-- | Free all resources, close all plugins, close engine.
+--
+-- Header declaration:
+--
+-- void xine_exit (xine_t *self)
+{#fun xine_exit {withEngine* `Engine'} -> `()'#}
+
+------------------------------------------------------------------------------
+-- Stream handling
+------------------------------------------------------------------------------
+
+-- | An opaque type, never dereferenced on the Haskell side
 {#pointer *xine_stream_t as Stream foreign newtype#}
 
--- XXX: just a hack. We really want to be able to pass
--- custom structs to functions. See 'withData', 'xine_open_audio_driver'.
-newtype Data = Data (Ptr Data)
+peekStream = maybeForeignPtr_ Stream
+{-# INLINE peekStream #-}
 
 -- | Media Resource Locator.
 -- Describes the media to read from. Valid MRLs may be plain file names or
@@ -127,198 +329,6 @@ newtype Data = Data (Ptr Data)
 --
 -- rtsp:\/\/host
 type MRL = String
-
-------------------------------------------------------------------------------
--- Marshalling
-------------------------------------------------------------------------------
-
-cint2bool :: CInt -> Bool
-cint2bool = (/= 0)
-{-# INLINE cint2bool #-}
-
-int2cint :: Int -> CInt
-int2cint = fromIntegral
-{-# INLINE int2cint #-}
-
-cint2int :: CInt -> Int
-cint2int = fromIntegral
-{-# INLINE cint2int #-}
-
-cuint2int :: CUInt -> Int
-cuint2int = fromIntegral
-{-# INLINE cuint2int #-}
-
-cint2enum :: Enum a => CInt -> a
-cint2enum = toEnum . cint2int
-{-# INLINE cint2enum #-}
-
-enum2cint :: Enum a => a -> CInt
-enum2cint = int2cint . fromEnum
-{-# INLINE enum2cint #-}
-
-peekInt :: Ptr CInt -> IO Int
-peekInt = liftM cint2int . peek
-{-# INLINE peekInt #-}
-
--- For pointers which may be NULL.
-maybeForeignPtr_ c x | x == nullPtr = return Nothing
-                     | otherwise    = (Just . c) `liftM` newForeignPtr_ x
-
-peekEngine = liftM Engine . newForeignPtr_
-{-# INLINE peekEngine #-}
-
-peekAudioPort = maybeForeignPtr_ AudioPort
-{-# INLINE peekAudioPort #-}
-
-peekVideoPort = maybeForeignPtr_ VideoPort
-{-# INLINE peekVideoPort #-}
-
-peekStream = maybeForeignPtr_ Stream
-{-# INLINE peekStream #-}
-
--- XXX: just a temporary hack until we can actually support
--- passing a custom struct to functions which support it.
-withData f = f nullPtr
-
--- Handle strings which may be NULL.
-withMaybeString :: Maybe String -> (CString -> IO a) -> IO a
-withMaybeString Nothing f  = f nullPtr
-withMaybeString (Just s) f = withCString s f
-
-------------------------------------------------------------------------------
--- Version information
-------------------------------------------------------------------------------
-
--- | Get xine-lib version string.
---
--- Header declaration:
---
--- const char *xine_get_version_string (void)
-{#fun pure xine_get_version_string {} -> `String' peekCString*#}
-
--- | Get version as a triple: major, minor, sub
---
--- Header declaration:
---
--- void xine_get_version (int *major, int *minor, int *sub)
-{#fun pure xine_get_version
- {alloca- `Int' peekInt*,
-  alloca- `Int' peekInt*,
-  alloca- `Int' peekInt*} -> `()'#}
-
--- | Compare given version to xine-lib version (major, minor, sub).
---
--- Header declaration:
---
--- int xine_check_version (int major, int minor, int sub)
---
--- returns 1 if compatible, 0 otherwise.
-{#fun pure xine_check_version
- {int2cint `Int',
-  int2cint `Int',
-  int2cint `Int'} -> `Bool' cint2bool#}
-
-------------------------------------------------------------------------------
--- Global engine handling
-------------------------------------------------------------------------------
-
--- | Valid visual types
-{#enum define VisualType {XINE_VISUAL_TYPE_NONE as None
-                         ,XINE_VISUAL_TYPE_X11 as X11
-                         ,XINE_VISUAL_TYPE_X11_2 as X11_2
-                         ,XINE_VISUAL_TYPE_AA as AA
-                         ,XINE_VISUAL_TYPE_FB as FB
-                         ,XINE_VISUAL_TYPE_GTK as GTK
-                         ,XINE_VISUAL_TYPE_DFB as DFB
-                         ,XINE_VISUAL_TYPE_PM as PM
-                         ,XINE_VISUAL_TYPE_DIRECTX as DirectX
-                         ,XINE_VISUAL_TYPE_CACA as CACA
-                         ,XINE_VISUAL_TYPE_MACOSX as MacOSX
-                         ,XINE_VISUAL_TYPE_XCB as XCB
-                         ,XINE_VISUAL_TYPE_RAW as Raw
-                         }#}
-
-deriving instance Eq VisualType
-
--- | Pre-init the xine engine.
---
--- Header declaration:
---
--- xine_t *xine_new (void)
-{#fun xine_new {} -> `Engine' peekEngine*#}
-
--- | Post-init the xine engine.
---
--- Header declaration:
---
--- void xine_init (xine_t *self)
-{#fun xine_init {withEngine* `Engine'} -> `()'#}
-
--- | Initialise audio driver.
---
--- Header declaration:
---
--- xine_audio_port_t *xine_open_audio_driver (xine_t *self, const char *id,
---                        void *data)
---
--- id: identifier of the driver, may be NULL for auto-detection
---
--- data: special data struct for ui/driver communication
---
--- May return NULL if the driver failed to load.
-{#fun xine_open_audio_driver
- {withEngine* `Engine'
- ,withMaybeString* `(Maybe String)'
- ,withData- `Data'} -> `(Maybe AudioPort)' peekAudioPort*#}
-
--- | Initialise video driver.
---
--- Header declaration:
---
--- xine_video_port_t *xine_open_video_driver (xine_t *self, const char *id,
---                        int visual, void *data)
---
--- id: identifier of the driver, may be NULL for auto-detection
---
--- data: special data struct for ui/driver communication
---
--- visual : video driver flavor selector
---
--- May return NULL if the driver failed to load.
-{#fun xine_open_video_driver
- {withEngine* `Engine'
- ,withMaybeString* `(Maybe String)'
- ,enum2cint `VisualType'
- ,withData- `Data'} -> `(Maybe VideoPort)' peekVideoPort*#}
-
--- | Close audio port.
---
--- Header declaration:
---
--- void xine_close_audio_driver (xine_t *self, xine_audio_port_t *driver)
-{#fun xine_close_audio_driver
- {withEngine* `Engine'
- ,withAudioPort* `AudioPort'} -> `()'#}
-
--- | Close video port.
---
--- Header declaration:
---
--- void xine_close_video_driver (xine_t *self, xine_video_port_t *driver)
-{#fun xine_close_video_driver
- {withEngine* `Engine'
- ,withVideoPort* `VideoPort'} -> `()'#}
-
--- | Free all resources, close all plugins, close engine.
---
--- Header declaration:
---
--- void xine_exit (xine_t *self)
-{#fun xine_exit {withEngine* `Engine'} -> `()'#}
-
-------------------------------------------------------------------------------
--- Stream handling
-------------------------------------------------------------------------------
 
 -- | Engine parameter enumeration.
 {#enum define EngineParam
@@ -388,6 +398,7 @@ deriving instance Eq Speed
 -- | Value for XINE_PARAM_FINE_SPEED
 {#enum define NormalSpeed
            {XINE_FINE_SPEED_NORMAL as NormalSpeed}#}
+
 -- | Values for XINE_PARAM_VO_ZOOM_
 {#enum define Zoom
            {XINE_VO_ZOOM_STEP as ZoomStep
@@ -685,6 +696,7 @@ allocLangBuf = allocaArray0 cXINE_LANG_MAX
           {withStream* `Stream'
           ,enum2cint `MetaType'} -> `String' peekCString*#}
 
+-- | The different kinds of stream information
 {#enum define InfoType
            {XINE_STREAM_INFO_BITRATE as InfoBitrate
            ,XINE_STREAM_INFO_SEEKABLE as InfoSeekable
@@ -743,6 +755,7 @@ allocLangBuf = allocaArray0 cXINE_LANG_MAX
             XINE_VIDEO_AFD_16_9_PROTECT_14_9 as AFD169Protect149,
             XINE_VIDEO_AFD_16_9_PROTECT_4_3 as AFD169Protect43}#}
 
+-- | The different kinds of metadata
 {#enum define MetaType
            {XINE_META_INFO_TITLE as MetaTitle
            ,XINE_META_INFO_COMMENT as MetaComment
