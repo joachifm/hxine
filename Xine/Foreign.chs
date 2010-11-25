@@ -723,6 +723,26 @@ allocLangBuf = allocaArray0 cXINE_LANG_MAX
            ,XINE_STREAM_INFO_DVD_ANGLE_NUMBER as InfoDvdAngleNumber
            ,XINE_STREAM_INFO_DVD_ANGLE_COUNT as InfoDvdAngleCount}#}
 
+-- | Possible values for InfoVideoAFD
+{#enum define AFDValue
+           {XINE_VIDEO_AFD_NOT_PRESENT as AFDNotPresent,
+            XINE_VIDEO_AFD_RESERVED_0 as AFDReserved0,
+            XINE_VIDEO_AFD_RESERVED_1 as AFDReserved1,
+            XINE_VIDEO_AFD_BOX_16_9_TOP as AFDBox169Top,
+            XINE_VIDEO_AFD_BOX_14_9_TOP as AFDBox149Top,
+            XINE_VIDEO_AFD_BOX_GT_16_9_CENTRE as AFDGt169Centre,
+            XINE_VIDEO_AFD_RESERVED_5 as AFDReserved5,
+            XINE_VIDEO_AFD_RESERVED_6 as AFDReserved6,
+            XINE_VIDEO_AFD_RESERVED_7 as AFDReserved7,
+            XINE_VIDEO_AFD_SAME_AS_FRAME as AFDSameAsFrame,
+            XINE_VIDEO_AFD_4_3_CENTRE as AFD43Centre,
+            XINE_VIDEO_AFD_16_9_CENTRE as AFD169Centre,
+            XINE_VIDEO_AFD_14_9_CENTRE as AFD149Centre,
+            XINE_VIDEO_AFD_RESERVED_12 as AFDReserved12,
+            XINE_VIDEO_AFD_4_3_PROTECT_14_9 as AFD43Protect149,
+            XINE_VIDEO_AFD_16_9_PROTECT_14_9 as AFD169Protect149,
+            XINE_VIDEO_AFD_16_9_PROTECT_4_3 as AFD169Protect43}#}
+
 {#enum define MetaType
            {XINE_META_INFO_TITLE as MetaTitle
            ,XINE_META_INFO_COMMENT as MetaComment
