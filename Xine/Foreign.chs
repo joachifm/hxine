@@ -23,7 +23,8 @@ module Xine.Foreign (
     xine_close_audio_driver, xine_close_video_driver, xine_exit,
     -- * Stream handling
     Stream, StreamParam(..), Speed(..), NormalSpeed(..), Zoom(..),
-    AspectRatio(..), MRL, EngineParam(..), Affection(..), TrickMode(..),
+    AspectRatio(..), DemuxStrategy(..), MRL, EngineParam(..), Affection(..),
+    TrickMode(..),
     xine_stream_new, xine_stream_master_slave, xine_open, xine_play,
     xine_dispose, xine_eject,
     xine_trick_mode, xine_stop, xine_close, xine_engine_set_param,
@@ -387,7 +388,6 @@ deriving instance Eq Speed
 -- | Value for XINE_PARAM_FINE_SPEED
 {#enum define NormalSpeed
            {XINE_FINE_SPEED_NORMAL as NormalSpeed}#}
-
 -- | Values for XINE_PARAM_VO_ZOOM_
 {#enum define Zoom
            {XINE_VO_ZOOM_STEP as ZoomStep
@@ -403,6 +403,15 @@ deriving instance Eq Speed
            ,XINE_VO_ASPECT_DVB as AspectDvb
            ,XINE_VO_ASPECT_NUM_RATIOS as AspectNumRatios
            }#}
+
+-- | Stream format detection strategies
+{#enum define DemuxStrategy
+           {XINE_DEMUX_DEFAULT_STRATEGY as DemuxDefault,
+            XINE_DEMUX_REVERT_STRATEGY as DemuxRevert,
+            XINE_DEMUX_CONTENT_STRATEGY as DemuxContent,
+            XINE_DEMUX_EXTENSION_STRATEGY as DemuxExtension}#}
+
+-- XXX: here
 
 -- | Create a new stream for media playback.
 --
