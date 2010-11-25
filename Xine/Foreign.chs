@@ -23,8 +23,8 @@ module Xine.Foreign (
     xine_close_audio_driver, xine_close_video_driver, xine_exit,
     -- * Stream handling
     Stream, StreamParam(..), Speed(..), NormalSpeed(..), Zoom(..),
-    AspectRatio(..), DemuxStrategy(..), MRL, EngineParam(..), Affection(..),
-    TrickMode(..),
+    AspectRatio(..), DemuxStrategy(..), Verbosity(..), MRL, EngineParam(..),
+    Affection(..), TrickMode(..),
     xine_stream_new, xine_stream_master_slave, xine_open, xine_play,
     xine_dispose, xine_eject,
     xine_trick_mode, xine_stop, xine_close, xine_engine_set_param,
@@ -411,7 +411,11 @@ deriving instance Eq Speed
             XINE_DEMUX_CONTENT_STRATEGY as DemuxContent,
             XINE_DEMUX_EXTENSION_STRATEGY as DemuxExtension}#}
 
--- XXX: here
+-- | Verbosity setting
+{#enum define Verbosity
+           {XINE_VERBOSITY_NONE as VerbosityNone,
+            XINE_VERBOSITY_LOG as VerbosityLog,
+            XINE_VERBOSITY_DEBUG as VerbosityDebug}#}
 
 -- | Create a new stream for media playback.
 --
