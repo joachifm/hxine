@@ -101,6 +101,9 @@ withMaybeString (Just s) f = withCString s f
 -- Version information
 ------------------------------------------------------------------------------
 
+-- For conditional compilation depending on the xine-lib version
+#include "xine_check_version.h"
+
 -- | Get xine-lib version string.
 --
 -- Header declaration:
