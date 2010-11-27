@@ -6,7 +6,7 @@
 #
 # Will catch missing distfiles and build-errors due to missing modules.
 
-set -e
+#set -e
 #set -x
 
 # Cabal package lint
@@ -32,7 +32,7 @@ distsrc="./dist/${distname}-${distver}.tar.gz"
 tmpdir=`mktemp -d`
 tar xf "$distsrc" -C "$tmpdir"
 cd "${tmpdir}/${distname}-${distver}"
-cabal configure -v0 -O0 --ghc-options=-Werror && cabal build -v0
+cabal configure -v0 -O0 --ghc-options="-Wall -Werror" && cabal build -v0
 if [ $? -ne 0 ] ; then
     rm -rf "$tmpdir"
     echo "checkdist.sh: 'cabal build' failed; temporary files in $tmpdir" >&2
