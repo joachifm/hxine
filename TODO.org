@@ -33,3 +33,14 @@ playCurrent
 * TODO Proper exception type for xine-lib errors                :enhancement:
 * TODO Support video playback                                       :feature:
 Need to pass a Graphics.X11.Xlib.Visual to xine_open_video_driver
+
+* DONE Use xine version checks to make the binding compatible across versions
+CLOSED: [2011-05-03 Tue 06:49]
+* TODO Should not be possible to construct invalid instances of `XineConf'
+If `XineConf.visualType' is not `None' then `XineConf.videoDriver'
+and `XineConf.visual' must be set.
+
+* DONE A test harness
+CLOSED: [2011-05-03 Tue 06:55]
+- Quick :: run on each commit, simple unit tests, formatting checks and build check
+- Full :: run before cutting a release
