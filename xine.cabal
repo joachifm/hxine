@@ -28,7 +28,7 @@ library
     other-modules:
         Xine.Internal.Handle,
         Xine.Internal.Stream
-    build-depends: base ==4.2.*,
+    build-depends: base ==4.3.*,
                    containers ==0.3.*
     build-tools: c2hs
     extensions: CPP, ForeignFunctionInterface, StandaloneDeriving
