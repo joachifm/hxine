@@ -1,3 +1,6 @@
+* version 0.0.0.3, 2011-05-03
+	- Support GHC 7
+
 * version 0.0.0.2, 2010-07-13
 	- Allow GHC to preempt calls to foreign functions
 

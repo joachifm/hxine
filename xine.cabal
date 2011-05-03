@@ -1,8 +1,8 @@
 name: xine
-version: 0.0.0.2
+version: 0.0.0.3
 license: LGPL
 license-file: COPYING
-copyright: Joachim Fasting 2010
+copyright: Joachim Fasting 2011
 author: Joachim Fasting
 maintainer: Joachim Fasting <joachim.fasting@gmail.com>
 category: Media, Sound, Video
