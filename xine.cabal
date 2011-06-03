@@ -27,8 +27,9 @@ source-repository head
 library
     hs-source-dirs: .
 
-    exposed-modules: Xine,
-                     Xine.Foreign
+    exposed-modules:
+        Xine,
+        Xine.Foreign
     other-modules:
         Xine.Internal.Handle,
         Xine.Internal.Stream
@@ -39,8 +40,9 @@ library
         base >= 4.3 && < 5,
         containers >= 0.3 && < 1
 
-    build-tools: c2hs
     extensions: CPP, ForeignFunctionInterface, StandaloneDeriving
+
+    build-tools: c2hs
     includes: xine.h
     include-dirs: cbits
     pkgconfig-depends: libxine >= 1.1.18.1 && < 2
