@@ -33,8 +33,11 @@ library
         Xine.Internal.Handle,
         Xine.Internal.Stream
 
-    build-depends: base ==4.3.*,
-                   containers ==0.3.*
+    -- The lower bound is set to the oldest major.minor version that
+    -- is known to work, as per the recommended versioning policy.
+    build-depends:
+        base >= 4.3 && < 5,
+        containers >= 0.3 && < 1
 
     build-tools: c2hs
     extensions: CPP, ForeignFunctionInterface, StandaloneDeriving
