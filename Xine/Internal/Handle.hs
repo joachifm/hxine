@@ -11,8 +11,6 @@
 
 module Xine.Internal.Handle (
    -- * Xine engine handle
-   -- XXX: add additional operators and helpers so we do not have
-   -- to expose the underlying implementation to the consumer.
    HandleState(..), XineHandle_(..), XineHandle(..), isClosed,
    -- * Using handles
    modifyXineHandle, withXineHandle, withStream
